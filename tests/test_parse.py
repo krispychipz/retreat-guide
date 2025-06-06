@@ -3,7 +3,11 @@ import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from parse_sesshin_events import fetch_retreat_events, fetch_all_retreats
+from parse_sesshin_events import (
+    fetch_retreat_events,
+    fetch_all_retreats,
+    events_to_xml,
+)
 
 SAMPLE_HTML_RETREAT = '''
 <table>
@@ -78,4 +82,19 @@ def test_fetch_all_retreats(monkeypatch):
     assert len(events) == 1
     assert events[0]["practice_center"] == "Green Gulch"
     assert events[0]["source"] == "https://one"
+
+
+def test_events_to_xml():
+    events = [
+        {
+            "title": "3-Day Retreat",
+            "date": "June 1",
+            "practice_center": "Green Gulch",
+            "link": "https://example.com/retreat",
+            "source": "https://dummy?page=0",
+        }
+    ]
+    xml = events_to_xml(events)
+    assert "<retreats>" in xml
+    assert "<title>3-Day Retreat</title>" in xml
 
