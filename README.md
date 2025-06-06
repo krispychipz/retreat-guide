@@ -1,6 +1,9 @@
 # Retreat Guide
 
-This repository provides a script that gathers retreat events from the San Francisco Zen Center website.
+This repository provides a small tool for gathering retreat events.  Each website
+has its own parser module under `sites/`, allowing new sources to be added
+easily.  The included example fetches events from the San Francisco Zen Center
+website.
 
 ## Requirements
 
