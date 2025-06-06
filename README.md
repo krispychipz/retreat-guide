@@ -22,4 +22,10 @@ Run the script:
 python parse_sesshin_events.py
 ```
 
+Add `--debug` to see detailed parsing information:
+
+```bash
+python parse_sesshin_events.py --debug
+```
+
 The script will print dates, info, links, and the source URL for events that contain the word "retreat" in their title.
