@@ -1,7 +1,9 @@
 import logging
+import xml.etree.ElementTree as ET
+from typing import Dict, List
+
 import requests
 from bs4 import BeautifulSoup
-from typing import List, Dict
 
 
 logger = logging.getLogger(__name__)
@@ -81,12 +83,26 @@ def fetch_all_retreats(urls: List[str], pages: int = 3) -> List[Dict[str, str]]:
     return all_events
 
 
+def events_to_xml(events: List[Dict[str, str]]) -> str:
+    """Convert a list of events to an XML string."""
+    root = ET.Element("retreats")
+    for event in events:
+        retreat_elem = ET.SubElement(root, "retreat")
+        for key, value in event.items():
+            child = ET.SubElement(retreat_elem, key)
+            child.text = value
+
+    xml_bytes = ET.tostring(root, encoding="utf-8", xml_declaration=True)
+    return xml_bytes.decode("utf-8")
+
+
 def main() -> None:
     import argparse
 
     parser = argparse.ArgumentParser(description="Parse retreat events from SFZC")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
     parser.add_argument("--pages", type=int, default=3, help="Number of pages to fetch")
+    parser.add_argument("--output", type=str, help="Write events to this XML file")
     args = parser.parse_args()
 
     log_level = logging.DEBUG if args.debug else logging.INFO
@@ -101,12 +117,18 @@ def main() -> None:
         "&ajax_page_state%5Blibraries%5D=eJxlz1FuwyAMBuALETgSMuBQNoMjG9Zlpx9dtLVLXiz8Yf2yA3PXLrD5ACKF3cpSTThrJg5Ai_adSsvX_6nveuXGCV-UShCQ3f2JiSzoIteNG7au9pywLEEQUpRRg8nMmdB3yC7Pcu4tvMHnf6xmA4E8827qkowNyD7FjraNQEVvmIyuX3EeP5c4nqeLtXS8l4QeCKW70ko3umvH6gIomh58xQwV27jCIwTVfBS8q_uptnIahAf50tZHIHqNwkTHyPKry6Hfd5anxQ"
     )
     events = fetch_retreat_events(url, pages=args.pages)
-    for event in events:
-        print(f"{event['date']} - {event['title']}")
-        print(event['practice_center'])
-        print(event['link'])
-        print(f"Source: {event['source']}")
-        print()
+
+    if args.output:
+        xml_data = events_to_xml(events)
+        with open(args.output, "w", encoding="utf-8") as fh:
+            fh.write(xml_data)
+    else:
+        for event in events:
+            print(f"{event['date']} - {event['title']}")
+            print(event['practice_center'])
+            print(event['link'])
+            print(f"Source: {event['source']}")
+            print()
 
 
 if __name__ == "__main__":
