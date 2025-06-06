@@ -1,6 +1,6 @@
 # Retreat Guide
 
-This repository provides a script that parses sesshin events from the San Francisco Zen Center calendar.
+This repository provides a script that aggregates retreat events from multiple dharma center calendars.
 
 ## Requirements
 
@@ -16,10 +16,11 @@ pip install -r requirements.txt
 
 ## Usage
 
-Run the parser:
+1. Create a file named `calendar_urls.txt` containing one calendar URL per line. A couple of example entries are included by default.
+2. Run the script:
 
 ```bash
 python parse_sesshin_events.py
 ```
 
-The script prints the date, info and link for each calendar event that includes the word "sesshin" in its title.
+The script will print dates, info, links, and the source calendar for events that contain the word "retreat" in their title.
