@@ -42,18 +42,9 @@ def fetch_all_retreats(urls: List[str]) -> List[Dict[str, str]]:
     return all_events
 
 
-def read_calendar_urls(path: str = "calendar_urls.txt") -> List[str]:
-    try:
-        with open(path, "r", encoding="utf-8") as fh:
-            return [line.strip() for line in fh if line.strip()]
-    except FileNotFoundError:
-        print(f"Calendar list file {path} not found.")
-        return []
-
-
 def main() -> None:
-    urls = read_calendar_urls()
-    events = fetch_all_retreats(urls)
+    url = "https://www.sfzc.org/calendar"
+    events = fetch_retreat_events(url)
     for event in events:
         print(f"{event['date']} - {event['title']}")
         print(event['info'])
