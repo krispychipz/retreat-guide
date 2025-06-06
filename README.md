@@ -16,16 +16,17 @@ pip install -r requirements.txt
 
 ## Usage
 
-Run the script:
+Run the script (it will fetch several pages from the site's AJAX endpoint):
 
 ```bash
 python parse_sesshin_events.py
 ```
 
-Add `--debug` to see detailed parsing information:
+The script downloads three pages of events by default. Add `--pages` to change
+the number of pages or `--debug` to see detailed parsing information:
 
 ```bash
-python parse_sesshin_events.py --debug
+python parse_sesshin_events.py --pages 5 --debug
 ```
 
 The script will print dates, info, links, and the source URL for events that contain the word "retreat" in their title.
