@@ -20,8 +20,8 @@ def _parse_events(html: str, source: str) -> List[Dict[str, str]]:
             continue
         title_text = title_cell.get_text(strip=True)
         logger.debug("Found title: %s", title_text)
-        if "retreat" not in title_text.lower():
-            logger.debug("Title does not contain 'retreat', skipping")
+        if "sesshin" not in title_text.lower():
+            logger.debug("Title does not contain 'sesshin', skipping")
             continue
 
         date_cell = row.select_one("td.views-field.views-field-field-dates-1")
@@ -43,7 +43,7 @@ def _parse_events(html: str, source: str) -> List[Dict[str, str]]:
 
 
 def fetch_retreat_events(base_url: str, pages: int = 3) -> List[Dict[str, str]]:
-    """Fetch events containing 'retreat' from an AJAX-powered calendar."""
+    """Fetch events containing 'sesshin' from an AJAX-powered calendar."""
     all_events = []
     for page in range(pages):
         url = base_url.format(page=page)
@@ -64,7 +64,7 @@ def fetch_retreat_events(base_url: str, pages: int = 3) -> List[Dict[str, str]]:
         events = _parse_events(html, url)
         all_events.extend(events)
 
-    logger.info("%d retreat events found", len(all_events))
+    logger.info("%d sesshin events found", len(all_events))
     return all_events
 
 
