@@ -29,4 +29,5 @@ the number of pages or `--debug` to see detailed parsing information:
 python parse_sesshin_events.py --pages 5 --debug
 ```
 
-The script will print dates, info, links, and the source URL for events that contain the word "retreat" in their title.
+The script will print the date, practice center, link, and source URL for events
+whose title contains the word "retreat".

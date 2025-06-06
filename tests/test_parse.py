@@ -6,21 +6,27 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from parse_sesshin_events import fetch_retreat_events, fetch_all_retreats
 
 SAMPLE_HTML_RETREAT = '''
-<div class="card-event">
-    <div class="card-title">3-Day Retreat</div>
-    <div class="card-date">June 1</div>
-    <div class="card-description">Meditation intensive.</div>
-    <a href="https://example.com/retreat">Details</a>
-</div>
+<table>
+<tr>
+    <td class="views-field views-field-title">
+        <a href="https://example.com/retreat">3-Day Retreat</a>
+    </td>
+    <td class="views-field views-field-field-dates-1">June 1</td>
+    <td class="views-field views-field-field-practice-center">Green Gulch</td>
+</tr>
+</table>
 '''
 
 SAMPLE_HTML_NONE = '''
-<div class="card-event">
-    <div class="card-title">Weekly Practice</div>
-    <div class="card-date">June 2</div>
-    <div class="card-description">Regular sitting</div>
-    <a href="https://example.com/practice">Details</a>
-</div>
+<table>
+<tr>
+    <td class="views-field views-field-title">
+        <a href="https://example.com/practice">Weekly Practice</a>
+    </td>
+    <td class="views-field views-field-field-dates-1">June 2</td>
+    <td class="views-field views-field-field-practice-center">City Center</td>
+</tr>
+</table>
 '''
 
 SAMPLE_JSON_RETREAT = [{"data": SAMPLE_HTML_RETREAT}]
@@ -44,6 +50,7 @@ def test_fetch_retreat_events(monkeypatch):
     events = fetch_retreat_events("https://dummy?page={page}", pages=1)
     assert len(events) == 1
     assert events[0]["title"] == "3-Day Retreat"
+    assert events[0]["practice_center"] == "Green Gulch"
     assert events[0]["source"] == "https://dummy?page=0"
 
 
@@ -69,5 +76,6 @@ def test_fetch_all_retreats(monkeypatch):
     monkeypatch.setattr("requests.get", mock_get)
     events = fetch_all_retreats(list(responses.keys()), pages=1)
     assert len(events) == 1
+    assert events[0]["practice_center"] == "Green Gulch"
     assert events[0]["source"] == "https://one"
 

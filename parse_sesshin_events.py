@@ -12,28 +12,29 @@ def _parse_events(html: str, source: str) -> List[Dict[str, str]]:
     soup = BeautifulSoup(html, "html.parser")
 
     events = []
-    cards = soup.select(".card-event")
-    logger.debug("Found %d '.card-event' elements", len(cards))
-    for event in cards:
-        title_elem = event.select_one(".card-title")
-        if not title_elem:
-            logger.debug("Skipping element with no title")
+    rows = soup.select("tr")
+    logger.debug("Found %d 'tr' elements", len(rows))
+    for row in rows:
+        title_cell = row.select_one("td.views-field.views-field-title")
+        if not title_cell:
             continue
-        title_text = title_elem.get_text(strip=True)
+        title_text = title_cell.get_text(strip=True)
         logger.debug("Found title: %s", title_text)
         if "retreat" not in title_text.lower():
             logger.debug("Title does not contain 'retreat', skipping")
             continue
 
-        date_elem = event.select_one(".card-date")
-        info_elem = event.select_one(".card-description")
-        link_elem = event.select_one("a")
+        date_cell = row.select_one("td.views-field.views-field-field-dates-1")
+        center_cell = row.select_one(
+            "td.views-field.views-field-field-practice-center"
+        )
+        link_elem = title_cell.find("a", href=True)
 
         event_data = {
             "title": title_text,
-            "date": date_elem.get_text(strip=True) if date_elem else "",
-            "info": info_elem.get_text(strip=True) if info_elem else "",
-            "link": link_elem["href"] if link_elem and link_elem.has_attr("href") else "",
+            "date": date_cell.get_text(strip=True) if date_cell else "",
+            "practice_center": center_cell.get_text(strip=True) if center_cell else "",
+            "link": link_elem["href"] if link_elem else "",
             "source": source,
         }
         logger.debug("Added event: %s", event_data)
@@ -102,7 +103,7 @@ def main() -> None:
     events = fetch_retreat_events(url, pages=args.pages)
     for event in events:
         print(f"{event['date']} - {event['title']}")
-        print(event['info'])
+        print(event['practice_center'])
         print(event['link'])
         print(f"Source: {event['source']}")
         print()
