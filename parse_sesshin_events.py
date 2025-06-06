@@ -4,6 +4,10 @@ from typing import Callable, List, Dict
 import requests
 
 from sites import sfzc
+import xml.etree.ElementTree as ET
+from typing import Dict, List
+
+import requests
 
 
 logger = logging.getLogger(__name__)
@@ -57,12 +61,26 @@ def fetch_all_retreats(
     return all_events
 
 
+def events_to_xml(events: List[Dict[str, str]]) -> str:
+    """Convert a list of events to an XML string."""
+    root = ET.Element("retreats")
+    for event in events:
+        retreat_elem = ET.SubElement(root, "retreat")
+        for key, value in event.items():
+            child = ET.SubElement(retreat_elem, key)
+            child.text = value
+
+    xml_bytes = ET.tostring(root, encoding="utf-8", xml_declaration=True)
+    return xml_bytes.decode("utf-8")
+
+
 def main() -> None:
     import argparse
 
     parser = argparse.ArgumentParser(description="Parse retreat events from SFZC")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
     parser.add_argument("--pages", type=int, default=3, help="Number of pages to fetch")
+    parser.add_argument("--output", type=str, help="Write events to this XML file")
     args = parser.parse_args()
 
     log_level = logging.DEBUG if args.debug else logging.INFO
@@ -75,6 +93,7 @@ def main() -> None:
         print(event['link'])
         print(f"Source: {event['source']}")
         print()
+
 
 
 if __name__ == "__main__":
