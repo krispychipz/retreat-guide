@@ -6,9 +6,16 @@ from typing import List, Dict
 
 logger = logging.getLogger(__name__)
 
+# Keywords that qualify an event for inclusion.  Matching is case-insensitive.
+KEYWORDS = [
+    "retreat",
+    "sesshin",
+    "one-day sitting",
+]
+
 
 def fetch_retreat_events(url: str) -> List[Dict[str, str]]:
-    """Fetch events containing 'retreat' from a calendar page."""
+    """Fetch events containing certain keywords from a calendar page."""
     logger.info("Fetching %s", url)
     response = requests.get(url)
     logger.debug("Response status: %s", getattr(response, "status_code", "N/A"))
@@ -16,7 +23,11 @@ def fetch_retreat_events(url: str) -> List[Dict[str, str]]:
     soup = BeautifulSoup(response.text, "html.parser")
 
     events = []
-    cards = soup.select(".card-event")
+    container = soup.find("div", class_="view-content row")
+    if not container:
+        logger.debug("No container with class 'view-content row' found")
+        return events
+    cards = container.select(".card-event")
     logger.debug("Found %d '.card-event' elements", len(cards))
     for event in cards:
         title_elem = event.select_one(".card-title")
@@ -25,8 +36,9 @@ def fetch_retreat_events(url: str) -> List[Dict[str, str]]:
             continue
         title_text = title_elem.get_text(strip=True)
         logger.debug("Found title: %s", title_text)
-        if "retreat" not in title_text.lower():
-            logger.debug("Title does not contain 'retreat', skipping")
+        lowered = title_text.lower()
+        if not any(key in lowered for key in KEYWORDS):
+            logger.debug("Title does not contain keywords %s, skipping", KEYWORDS)
             continue
 
         date_elem = event.select_one(".card-date")
@@ -42,7 +54,7 @@ def fetch_retreat_events(url: str) -> List[Dict[str, str]]:
         }
         logger.debug("Added event: %s", event_data)
         events.append(event_data)
-    logger.info("%d retreat events found", len(events))
+    logger.info("%d events found", len(events))
     return events
 
 

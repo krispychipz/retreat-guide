@@ -28,4 +28,4 @@ Add `--debug` to see detailed parsing information:
 python parse_sesshin_events.py --debug
 ```
 
-The script will print dates, info, links, and the source URL for events that contain the word "retreat" in their title.
+The script prints dates, info, links, and the source URL for events whose title includes one of the keywords `retreat`, `sesshin`, or `One-Day Sitting`.
