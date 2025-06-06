@@ -1,6 +1,9 @@
 # Retreat Guide
 
-This repository provides a script that gathers retreat events from the San Francisco Zen Center website.
+This repository provides a small tool for gathering retreat events.  Each website
+has its own parser module under `sites/`, allowing new sources to be added
+easily.  The included example fetches events from the San Francisco Zen Center
+website.
 
 ## Requirements
 
@@ -16,7 +19,8 @@ pip install -r requirements.txt
 
 ## Usage
 
-Run the script (it will fetch several pages from the site's AJAX endpoint):
+Run the example script (it will fetch several pages from the SFZC site's AJAX
+endpoint):
 
 ```bash
 python parse_sesshin_events.py
