@@ -1,6 +1,6 @@
 import logging
 from dataclasses import asdict
-from typing import Callable, List
+from typing import Callable, Dict, List, Optional
 
 import requests
 import json
@@ -18,11 +18,11 @@ def fetch_retreat_events(
     base_url: str,
     pages: int = 3,
     parser: Callable[[str, str], List[RetreatEvent]] = sfzc.parse_events,
+    params: Optional[Dict[str, str]] = None,
 ) -> List[RetreatEvent]:
     """Fetch events containing 'retreat' from an AJAX-powered calendar."""
     all_events: List[RetreatEvent] = []
     for page in range(pages):
-        url = base_url.format(page=page)
         headers = {
             "User-Agent": (
                 "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
@@ -32,12 +32,17 @@ def fetch_retreat_events(
             "Accept-Language": "en-US,en;q=0.9",
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         }
-        logger.info("Fetching %s", url)
-        try:
+        if params is None:
+            url = base_url.format(page=page)
+            request_url = url
+            logger.info("Fetching %s", url)
             response = requests.get(url, headers=headers)
-        except TypeError:
-            # support simple test mocks that don't accept the headers kwarg
-            response = requests.get(url)
+        else:
+            page_params = params.copy()
+            page_params["page"] = str(page)
+            logger.info("Fetching %s", base_url)
+            response = requests.get(base_url, params=page_params, headers=headers)
+            request_url = response.url
         logger.debug("Response status: %s", getattr(response, "status_code", "N/A"))
         response.raise_for_status()
 
@@ -59,7 +64,7 @@ def fetch_retreat_events(
                     html_parts.append(str(data))
             html = "".join(html_parts)
 
-        events = parser(html, url)
+        events = parser(html, request_url)
         all_events.extend(events)
 
     logger.info("%d retreat events found", len(all_events))
@@ -91,7 +96,14 @@ def events_to_json(events: List[RetreatEvent]) -> str:
 def fetch_all_sites(pages: int = 3) -> List[RetreatEvent]:
     """Fetch retreat events from all supported centers."""
     events: List[RetreatEvent] = []
-    events.extend(fetch_retreat_events(sfzc.BASE_URL, pages=pages, parser=sfzc.parse_events))
+    events.extend(
+        fetch_retreat_events(
+            sfzc.BASE_AJAX,
+            pages=pages,
+            parser=sfzc.parse_events,
+            params=sfzc.DEFAULT_PARAMS,
+        )
+    )
     events.extend(fetch_retreat_events(IRC_URL, pages=1, parser=irc.parse_events))
     events.extend(fetch_retreat_events(SPIRITROCK_URL, pages=1, parser=spiritrock.parse_events))
     return events
@@ -116,7 +128,12 @@ def main() -> None:
     logging.basicConfig(level=log_level, format="%(levelname)s:%(message)s")
 
     if args.site == "sfzc":
-        events = fetch_retreat_events(sfzc.BASE_URL, pages=args.pages, parser=sfzc.parse_events)
+        events = fetch_retreat_events(
+            sfzc.BASE_AJAX,
+            pages=args.pages,
+            parser=sfzc.parse_events,
+            params=sfzc.DEFAULT_PARAMS,
+        )
     elif args.site == "irc":
         events = fetch_retreat_events(IRC_URL, pages=1, parser=irc.parse_events)
     elif args.site == "spiritrock":

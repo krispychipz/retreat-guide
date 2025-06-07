@@ -50,7 +50,7 @@ def test_fetch_retreat_events(monkeypatch):
         def json(self):
             return self.payload
 
-    def mock_get(url):
+    def mock_get(url, **kwargs):
         return MockResponse(SAMPLE_JSON_RETREAT)
 
     monkeypatch.setattr("requests.get", mock_get)
@@ -77,7 +77,7 @@ def test_fetch_all_retreats(monkeypatch):
         "https://two": SAMPLE_JSON_NONE,
     }
 
-    def mock_get(url):
+    def mock_get(url, **kwargs):
         base = url.split("?")[0]
         return MockResponse(responses[base])
 
@@ -91,7 +91,7 @@ def test_fetch_all_retreats(monkeypatch):
 
 
 def test_main_writes_output(tmp_path, monkeypatch):
-    def mock_fetch(url, pages=3, parser=None):
+    def mock_fetch(url, pages=3, parser=None, params=None):
         return [
             RetreatEvent(
                 title="3-Day Retreat",
