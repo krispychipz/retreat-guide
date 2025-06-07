@@ -13,26 +13,28 @@ import json
 from models import RetreatEvent, RetreatDates, RetreatLocation
 
 SAMPLE_HTML_RETREAT = '''
-<table>
+<table class="views-table">
+<caption>Saturday, Jun 29, 2025</caption>
+<tbody>
 <tr>
-    <td class="views-field views-field-title">
-        <a href="https://example.com/retreat">3-Day Retreat</a>
-    </td>
-    <td class="views-field views-field-field-dates-1">June 1</td>
-    <td class="views-field views-field-field-practice-center">Green Gulch</td>
+    <td>9:00 am</td>
+    <td>Green Gulch</td>
+    <td><a href="https://example.com/retreat">3-Day Retreat</a></td>
 </tr>
+</tbody>
 </table>
 '''
 
 SAMPLE_HTML_NONE = '''
-<table>
+<table class="views-table">
+<caption>Sunday, Jun 30, 2025</caption>
+<tbody>
 <tr>
-    <td class="views-field views-field-title">
-        <a href="https://example.com/practice">Weekly Practice</a>
-    </td>
-    <td class="views-field views-field-field-dates-1">June 2</td>
-    <td class="views-field views-field-field-practice-center">City Center</td>
+    <td>10:00 am</td>
+    <td>City Center</td>
+    <td><a href="https://example.com/practice">Weekly Practice</a></td>
 </tr>
+</tbody>
 </table>
 '''
 
