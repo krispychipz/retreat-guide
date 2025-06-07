@@ -36,6 +36,8 @@ the number of pages or `--debug` to see detailed parsing information. Use
 python parse_retreat_events.py --pages 5 --debug
 ```
 
+The Spirit Rock parser retrieves events from the center's public Algolia API.
+
 The script will print the date, practice center, link, and source URL for events
 whose title contains the word "retreat".
 
