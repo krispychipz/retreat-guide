@@ -1,14 +1,14 @@
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import List, Dict, Optional
+from typing import Dict, List, Optional
 
 
 @dataclass
 class RetreatDates:
     """Date range for a retreat."""
 
-    start: datetime
-    end: datetime
+    start: Optional[datetime] = None
+    end: Optional[datetime] = None
 
 
 @dataclass
