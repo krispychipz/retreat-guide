@@ -10,7 +10,7 @@ from models import RetreatDates, RetreatLocation
 SAMPLE_HTML = '''
 <div class="irc-retreat-listing-div-text">
   <p class="irc-retreat-listing-p">
-    <strong>7-Day Retreat</strong> Teacher One, Teacher Two<br>
+    <strong>7-Day Retreat</strong> with <a href="/t1">Teacher One</a>, <a href="/t2">Teacher Two</a><br>
     June 29 – July 13, 2025 - 10 days
   </p>
   <p class="irc-retreat-listing-p">Join us for an immersive retreat.</p>
@@ -35,3 +35,17 @@ def test_parse_events_basic():
     assert evt.location.country == "USA"
     assert evt.link == "https://example.com/reg"
     assert evt.other.get("source") == "https://source"
+
+
+def test_parse_events_real_file():
+    html_path = os.path.join(os.path.dirname(__file__), "irc.html")
+    html = open(html_path, encoding="utf-8").read()
+    events = irc.parse_events(html, html_path)
+    assert events
+    first = events[0]
+    assert first.title.startswith("1 week Insight Retreat")
+    assert first.teachers == ["Gil Fronsdal", "Nolitha Tsengiwe", "Devon Hase"]
+    assert first.dates.start == datetime(2025, 6, 1)
+    assert first.dates.end == datetime(2025, 6, 8)
+    assert first.link.startswith("https://")
+
