@@ -7,6 +7,7 @@ from parse_sesshin_events import (
     fetch_retreat_events,
     fetch_all_retreats,
     events_to_xml,
+    main as parse_main,
 )
 
 SAMPLE_HTML_RETREAT = '''
@@ -97,4 +98,26 @@ def test_events_to_xml():
     xml = events_to_xml(events)
     assert "<retreats>" in xml
     assert "<title>3-Day Retreat</title>" in xml
+
+
+def test_main_writes_output(tmp_path, monkeypatch):
+    def mock_fetch(url, pages=3, parser=None):
+        return [
+            {
+                "title": "3-Day Retreat",
+                "date": "June 1",
+                "practice_center": "Green Gulch",
+                "link": "https://example.com/retreat",
+                "source": url,
+            }
+        ]
+
+    monkeypatch.setattr("parse_sesshin_events.fetch_retreat_events", mock_fetch)
+
+    output = tmp_path / "events.xml"
+    monkeypatch.setattr(sys, "argv", ["prog", "--output", str(output)])
+    parse_main()
+
+    contents = output.read_text(encoding="utf-8")
+    assert "<retreats>" in contents
 
