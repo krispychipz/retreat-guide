@@ -35,15 +35,6 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
         if span:
             teachers = [a.get_text(strip=True) for a in span.find_all('a', href=True)]
             br_after_teachers = span.find_next('br')
-        '''
-        else:
-            br = detail_p.find('br')
-            for child in detail_p.children:
-                if child == br:
-                    break
-                if getattr(child, 'name', None) == 'a' and child.has_attr('href'):
-                    teachers.append(child.get_text(strip=True))
-        '''
         logger.debug("Teachers parsed: %s", teachers)
 
         # Raw date text is right after the first <br>

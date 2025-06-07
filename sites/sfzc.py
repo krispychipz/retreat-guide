@@ -13,7 +13,40 @@ logger = logging.getLogger(__name__)
 
 # Base calendar URL for regular page requests
 CALENDAR_URL = "https://www.sfzc.org/calendar?page={page}"
+# Default headers for requests to event detail pages
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/114.0.0.0 Safari/537.36"
+    )
+}
 
+
+def fetch_description(url: str) -> str:
+    """Fetch and return a description from an event detail page."""
+    try:
+        response = requests.get(url, headers=HEADERS, timeout=10)
+        response.raise_for_status()
+    except Exception as exc:  # noqa: BLE001
+        logger.debug("Failed to fetch %s: %s", url, exc)
+        return ""
+
+    soup = BeautifulSoup(response.text, "html.parser")
+
+    meta = soup.find("meta", property="og:description")
+    if meta and meta.get("content"):
+        return meta["content"].strip()
+
+    meta = soup.find("meta", attrs={"name": "description"})
+    if meta and meta.get("content"):
+        return meta["content"].strip()
+
+    body_div = soup.select_one("div.field--name-body")
+    if body_div:
+        return body_div.get_text(" ", strip=True)
+
+    return ""
 
 def parse_events(html: str, source: str) -> List[RetreatEvent]:
     """Parse retreat events from SFZC HTML snippet and return dataclasses."""
@@ -65,13 +98,15 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
                 logger.debug("Skipping non-retreat event: %s", title)
                 continue
 
+            description = fetch_description(link) if link else ""
+
             events.append(
                 RetreatEvent(
                     title=title,
                     dates=dates,
                     teachers=[],
                     location=location,
-                    description="",
+                    description=description,
                     link=link,
                     other={"source": source},
                 )
