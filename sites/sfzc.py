@@ -23,30 +23,39 @@ HEADERS = {
 }
 
 
-def fetch_description(url: str) -> str:
-    """Fetch and return a description from an event detail page."""
+def fetch_description(url: str) -> tuple[str, List[str]]:
+    """Fetch description and teacher names from an event detail page."""
     try:
         response = requests.get(url, headers=HEADERS, timeout=10)
         response.raise_for_status()
     except Exception as exc:  # noqa: BLE001
         logger.debug("Failed to fetch %s: %s", url, exc)
-        return ""
+        return "", []
 
     soup = BeautifulSoup(response.text, "html.parser")
 
-    meta = soup.find("meta", property="og:description")
-    if meta and meta.get("content"):
-        return meta["content"].strip()
-
-    meta = soup.find("meta", attrs={"name": "description"})
-    if meta and meta.get("content"):
-        return meta["content"].strip()
-
+    meta_og = soup.find("meta", property="og:description")
+    meta_desc = soup.find("meta", attrs={"name": "description"})
     body_div = soup.select_one("div.field--name-body")
-    if body_div:
-        return body_div.get_text(" ", strip=True)
 
-    return ""
+    description = ""
+    if meta_og and meta_og.get("content"):
+        description = meta_og["content"].strip()
+    elif meta_desc and meta_desc.get("content"):
+        description = meta_desc["content"].strip()
+    elif body_div:
+        description = body_div.get_text(" ", strip=True)
+
+    teachers: List[str] = []
+    teacher_div = soup.select_one("div.field--name-field-teachers")
+    if teacher_div:
+        for item in teacher_div.select("div.field__item"):
+            name = item.get_text(" ", strip=True)
+            if name:
+                teachers.append(name)
+
+    return description, teachers
+
 
 def parse_events(html: str, source: str) -> List[RetreatEvent]:
     """Parse retreat events from SFZC HTML snippet and return dataclasses."""
@@ -107,7 +116,11 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
                 )
 
             link_tag = cols[2].find("a")
-            title_raw = link_tag.get_text(strip=True) if link_tag else cols[2].get_text(strip=True)
+            title_raw = (
+                link_tag.get_text(strip=True)
+                if link_tag
+                else cols[2].get_text(strip=True)
+            )
             title = re.sub(r",\s*\d{1,2}/\d{1,2}$", "", title_raw)
             link = link_tag["href"] if link_tag and link_tag.has_attr("href") else ""
 
@@ -118,13 +131,16 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
                 logger.debug("Skipping non-retreat event: %s", title)
                 continue
 
-            description = fetch_description(link) if link else ""
+            if link:
+                description, teachers = fetch_description(link)
+            else:
+                description, teachers = "", []
 
             events.append(
                 RetreatEvent(
                     title=title,
                     dates=dates,
-                    teachers=[],
+                    teachers=teachers,
                     location=location,
                     description=description,
                     link=link,
