@@ -1,12 +1,13 @@
 from bs4 import BeautifulSoup
-from dataclasses import dataclass, field
 from datetime import datetime
-from typing import List, Dict, Optional
+from typing import Dict, List
 import re
+
 from models import RetreatEvent, RetreatDates, RetreatLocation
 
-def parse_retreats(html_path: str) -> List[RetreatEvent]:
-    soup = BeautifulSoup(open(html_path, encoding='utf-8'), 'html.parser')
+def parse_events(html: str, source: str) -> List[RetreatEvent]:
+    """Parse retreats from an IRC HTML page."""
+    soup = BeautifulSoup(html, 'html.parser')
     events: List[RetreatEvent] = []
 
     for container in soup.find_all('div', class_='irc-retreat-listing-div-text'):
@@ -93,12 +94,18 @@ def parse_retreats(html_path: str) -> List[RetreatEvent]:
             location=loc,
             description=description,
             link=link,
-            other=other
+            other={"source": source, **other}
         ))
 
     return events
 
-# Example usage
+
+def parse_retreats(html_path: str) -> List[RetreatEvent]:
+    """Convenience wrapper around :func:`parse_events` for local files."""
+    with open(html_path, encoding='utf-8') as fh:
+        return parse_events(fh.read(), html_path)
+
+
 if __name__ == '__main__':
     retreats = parse_retreats('/Users/richbae/Downloads/irc.html')
     for r in retreats:

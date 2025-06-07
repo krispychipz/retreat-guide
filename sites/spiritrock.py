@@ -1,38 +1,13 @@
 from bs4 import BeautifulSoup
-from dataclasses import dataclass, field
 from datetime import datetime
-from typing import List, Dict, Optional
+from typing import Dict, List
 import re
 
 from models import RetreatEvent, RetreatDates, RetreatLocation
 
-@dataclass
-class RetreatDates:
-    """Date range for a retreat."""
-    start: Optional[datetime]
-    end: Optional[datetime]
-
-@dataclass
-class RetreatLocation:
-    """Detailed retreat location information."""
-    practice_center: Optional[str] = None
-    city: Optional[str] = None
-    region: Optional[str] = None
-    country: Optional[str] = None
-
-@dataclass
-class RetreatEvent:
-    """Unified representation of a retreat event."""
-    title: str
-    dates: RetreatDates
-    teachers: List[str]
-    location: RetreatLocation
-    description: str
-    link: str
-    other: Dict[str, str] = field(default_factory=dict)
-
-def parse_spiritrock(html_path: str) -> List[RetreatEvent]:
-    soup = BeautifulSoup(open(html_path, encoding='utf-8'), 'html.parser')
+def parse_events(html: str, source: str) -> List[RetreatEvent]:
+    """Parse Spirit Rock retreat listings."""
+    soup = BeautifulSoup(html, 'html.parser')
     events: List[RetreatEvent] = []
 
     for card in soup.find_all('div', class_='event-card'):
@@ -88,12 +63,18 @@ def parse_spiritrock(html_path: str) -> List[RetreatEvent]:
             location=location,
             description=description,
             link=link,
-            other=other
+            other={"source": source, **other}
         ))
 
     return events
 
-# usage
+
+def parse_spiritrock(html_path: str) -> List[RetreatEvent]:
+    """Convenience wrapper for local files."""
+    with open(html_path, encoding='utf-8') as fh:
+        return parse_events(fh.read(), html_path)
+
+
 if __name__ == '__main__':
     retreats = parse_spiritrock('spiritrock.html')
     for evt in retreats:
