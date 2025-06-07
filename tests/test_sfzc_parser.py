@@ -70,6 +70,7 @@ def test_fetch_description_teachers(monkeypatch):
                 <div class="field__item"><a href="/teachers/teacher-two">Teacher Two</a></div>
             </div>
         </div>
+
     </body></html>
     """
 

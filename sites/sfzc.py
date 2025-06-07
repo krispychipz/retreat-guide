@@ -56,7 +56,6 @@ def fetch_description(url: str) -> tuple[str, List[str]]:
 
     return description, teachers
 
-
 def parse_events(html: str, source: str) -> List[RetreatEvent]:
     """Parse retreat events from SFZC HTML snippet and return dataclasses."""
     logger.debug("Parsing HTML from %s", source)
