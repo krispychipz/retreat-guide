@@ -29,10 +29,11 @@ def test_parse_events_basic():
     assert evt.teachers == ["Teacher One", "Teacher Two"]
     assert evt.dates.start == datetime(2025, 6, 29)
     assert evt.dates.end == datetime(2025, 7, 13)
-    assert evt.location.practice_center == "IRC"
+    assert evt.location.practice_center == "Insight Retreat Center"
     assert evt.location.city == "Santa Cruz"
     assert evt.location.region == "CA"
     assert evt.location.country == "USA"
+    assert evt.other.get("address") == "1906 Glen Canyon Rd, Santa Cruz, CA 95060"
     assert evt.link == "https://example.com/reg"
     assert evt.other.get("source") == "https://source"
 
@@ -48,4 +49,6 @@ def test_parse_events_real_file():
     assert first.dates.start == datetime(2025, 6, 1)
     assert first.dates.end == datetime(2025, 6, 8)
     assert first.link.startswith("https://")
+    assert first.location.practice_center == "Insight Retreat Center"
+    assert first.other.get("address") == "1906 Glen Canyon Rd, Santa Cruz, CA 95060"
 
