@@ -4,7 +4,7 @@ from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
-from parse_sesshin_events import (
+from parse_retreat_events import (
     fetch_retreat_events,
     fetch_all_retreats,
     events_to_xml,
@@ -120,7 +120,7 @@ def test_main_writes_output(tmp_path, monkeypatch):
             )
         ]
 
-    monkeypatch.setattr("parse_sesshin_events.fetch_retreat_events", mock_fetch)
+    monkeypatch.setattr("parse_retreat_events.fetch_retreat_events", mock_fetch)
 
     output = tmp_path / "events.xml"
     monkeypatch.setattr(sys, "argv", ["prog", "--output", str(output)])
