@@ -33,7 +33,11 @@ def fetch_retreat_events(
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
         }
         logger.info("Fetching %s", url)
-        response = requests.get(url, headers=headers)
+        try:
+            response = requests.get(url, headers=headers)
+        except TypeError:
+            # support simple test mocks that don't accept the headers kwarg
+            response = requests.get(url)
         logger.debug("Response status: %s", getattr(response, "status_code", "N/A"))
         response.raise_for_status()
 

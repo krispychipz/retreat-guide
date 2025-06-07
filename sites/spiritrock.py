@@ -10,35 +10,34 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
     soup = BeautifulSoup(html, 'html.parser')
     events: List[RetreatEvent] = []
 
-    for card in soup.find_all('div', class_='event-card'):
+    for card in soup.select('div.event-wrap'):
         # 1) Title & link
         a = card.select_one('h2.event-title a')
         if not a:
             continue
         title = a.get_text(strip=True)
-        link  = a['href']
+        link = a['href']
 
-        # 2) Dates: container with class "flex flex-row w-full mb-4 event-headline"
-        headline = card.select_one('div.event-headline')
-        raw_dates = headline.get_text(' ', strip=True) if headline else ''
-        # match "June 29, 2025 – July 13, 2025"
-        m = re.search(r'([A-Za-z]+ \d{1,2}, \d{4})\s*[–-]\s*([A-Za-z]+ \d{1,2}, \d{4})', raw_dates)
+        # 2) Meta block contains date range and teacher links
+        meta_txt = card.select_one('.event-meta-full')
+        raw_meta = meta_txt.get_text(' ', strip=True) if meta_txt else ''
+
+        # match "June 29 – July 13, 2025" or similar
+        m = re.search(r'([A-Za-z]+ \d{1,2},? \d{4}).*?[–-].*?([A-Za-z]+ \d{1,2},? \d{4})', raw_meta)
         if m:
             start_dt = datetime.strptime(m.group(1), "%B %d, %Y")
-            end_dt   = datetime.strptime(m.group(2), "%B %d, %Y")
+            end_dt = datetime.strptime(m.group(2), "%B %d, %Y")
             dates = RetreatDates(start=start_dt, end=end_dt)
         else:
             dates = RetreatDates(start=None, end=None)
 
-        # 3) Teachers: div with class ending in "teacher-names-only"
-        teacher_div = card.find('div', class_='teacher-names-only')
+        # 3) Teachers: gather names from links in meta, skipping register links
         teachers = []
-        if teacher_div:
-            # split on commas, strip whitespace
-            for name in teacher_div.get_text(strip=True).split(','):
-                name = name.strip()
-                if name:
-                    teachers.append(name)
+        for link_tag in meta_txt.select('a[href]') if meta_txt else []:
+            href = link_tag['href']
+            if 'retreat.guru/program' in href:
+                continue
+            teachers.append(link_tag.get_text(strip=True))
 
         # 4) Description: the summary paragraph or div
         desc_div = card.select_one('.event-description, .event-summary')
@@ -46,10 +45,8 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
 
         # 5) Other info: status or credits from the card-meta if present
         other: Dict[str, str] = {}
-        meta = card.select_one('.event-meta-full')
-        if meta:
-            text = meta.get_text(' ', strip=True)
-            # example: look for "Status: Full" or "Waitlist open"
+        if meta_txt:
+            text = meta_txt.get_text(' ', strip=True)
             if 'Full' in text:
                 other['Status'] = text
 
