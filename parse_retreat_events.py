@@ -35,7 +35,16 @@ def fetch_retreat_events(
             payload = None
 
         if isinstance(payload, list):
-            html = "".join(part.get("data", "") for part in payload if isinstance(part, dict))
+            html_parts: List[str] = []
+            for part in payload:
+                if not isinstance(part, dict):
+                    continue
+                data = part.get("data", "")
+                if isinstance(data, list):
+                    html_parts.extend(str(item) for item in data if isinstance(item, (str, bytes)))
+                else:
+                    html_parts.append(str(data))
+            html = "".join(html_parts)
 
         events = parser(html, url)
         all_events.extend(events)
