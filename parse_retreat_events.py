@@ -23,8 +23,17 @@ def fetch_retreat_events(
     all_events: List[RetreatEvent] = []
     for page in range(pages):
         url = base_url.format(page=page)
+        headers = {
+            "User-Agent": (
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/114.0.0.0 Safari/537.36"
+            ),
+            "Accept-Language": "en-US,en;q=0.9",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        }
         logger.info("Fetching %s", url)
-        response = requests.get(url)
+        response = requests.get(url, headers=headers)
         logger.debug("Response status: %s", getattr(response, "status_code", "N/A"))
         response.raise_for_status()
 
