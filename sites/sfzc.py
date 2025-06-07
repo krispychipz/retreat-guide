@@ -1,5 +1,7 @@
 from datetime import datetime
-from typing import Dict, List
+from typing import List
+
+import logging
 
 from bs4 import BeautifulSoup
 import requests
@@ -7,54 +9,37 @@ import re
 
 from models import RetreatEvent, RetreatDates, RetreatLocation
 
-# Base endpoint for AJAX requests
-BASE_AJAX = "https://www.sfzc.org/views/ajax"
+logger = logging.getLogger(__name__)
 
-# Default query parameters sent with each request. The page number will be
-# inserted at runtime.
-DEFAULT_PARAMS: Dict[str, str] = {
-    "_wrapper_format": "drupal_ajax",
-    "view_name": "events",
-    "view_display_id": "default",
-    "_drupal_ajax": "1",
-}
-
-
-def fetch_events_page(page: int) -> str:
-    """Fetch a single events page from SFZC using the AJAX endpoint."""
-    params = DEFAULT_PARAMS.copy()
-    params["page"] = str(page)
-    headers = {
-        "X-Requested-With": "XMLHttpRequest",
-        "User-Agent": (
-            "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
-            "AppleWebKit/537.36 (KHTML, like Gecko) "
-            "Chrome/114.0.0.0 Safari/537.36"
-        ),
-    }
-    resp = requests.get(BASE_AJAX, params=params, headers=headers)
-    resp.raise_for_status()
-    return resp.text
+# Base calendar URL for regular page requests
+CALENDAR_URL = "https://www.sfzc.org/calendar?page={page}"
 
 
 def parse_events(html: str, source: str) -> List[RetreatEvent]:
     """Parse retreat events from SFZC HTML snippet and return dataclasses."""
+    logger.debug("Parsing HTML from %s", source)
     soup = BeautifulSoup(html, "html.parser")
     events: List[RetreatEvent] = []
 
-    for table in soup.select("table.views-table"):
+    tables = soup.select("table.views-table")
+    logger.debug("Found %d event tables", len(tables))
+
+    for table in tables:
         cap = table.find("caption")
         if not cap:
+            logger.debug("Skipping table without caption")
             continue
         date_str = cap.get_text(strip=True)
         try:
             event_day = datetime.strptime(date_str, "%A, %b %d, %Y").date()
         except ValueError:
+            logger.debug("Could not parse date '%s'", date_str)
             continue
 
         for row in table.select("tbody tr"):
             cols = row.find_all("td")
             if len(cols) < 3:
+                logger.debug("Row has %d columns, expected 3", len(cols))
                 continue
 
             time_str = cols[0].get_text(strip=True)
@@ -74,6 +59,7 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
             link = link_tag["href"] if link_tag and link_tag.has_attr("href") else ""
 
             if "retreat" not in title.lower():
+                logger.debug("Skipping non-retreat event: %s", title)
                 continue
 
             events.append(
@@ -88,6 +74,7 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
                 )
             )
 
+    logger.debug("Parsed %d retreat events from %s", len(events), source)
     return events
 
 
