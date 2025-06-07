@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import List
+from typing import List, Dict
 
 import logging
 
@@ -85,6 +85,26 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
 
             loc_name = cols[1].get_text(strip=True)
             location = RetreatLocation(practice_center=loc_name)
+            other: Dict[str, str] = {"source": source}
+
+            name_lower = loc_name.lower()
+            if "city center" in name_lower:
+                location.city = "San Francisco"
+                location.region = "CA"
+                location.country = "USA"
+                other["address"] = "300 Page St, San Francisco, CA 94102"
+            elif "green gulch" in name_lower:
+                location.city = "Muir Beach"
+                location.region = "CA"
+                location.country = "USA"
+                other["address"] = "1601 Shoreline Hwy, Muir Beach, CA 94965"
+            elif "tassajara" in name_lower:
+                location.city = "Carmel Valley"
+                location.region = "CA"
+                location.country = "USA"
+                other["address"] = (
+                    "39171 Tassajara Road Carmel Valley, CA 93924 Jamesburg"
+                )
 
             link_tag = cols[2].find("a")
             title_raw = link_tag.get_text(strip=True) if link_tag else cols[2].get_text(strip=True)
@@ -108,7 +128,7 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
                     location=location,
                     description=description,
                     link=link,
-                    other={"source": source},
+                    other=other,
                 )
             )
 
