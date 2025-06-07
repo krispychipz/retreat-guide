@@ -19,7 +19,7 @@ pip install -r requirements.txt
 
 ## Usage
 
-Run the script (it will fetch several pages from the site's AJAX endpoint). By default
+Run the script (it will fetch several pages from the site's calendar). By default
 it prints results to the console.  Pass `--output` to write the collected events
 to a JSON file instead of printing them:
 

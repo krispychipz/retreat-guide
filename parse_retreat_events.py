@@ -20,7 +20,7 @@ def fetch_retreat_events(
     parser: Callable[[str, str], List[RetreatEvent]] = sfzc.parse_events,
     params: Optional[Dict[str, str]] = None,
 ) -> List[RetreatEvent]:
-    """Fetch events containing 'retreat' from an AJAX-powered calendar."""
+    """Fetch events containing 'retreat' from paginated calendar pages."""
     all_events: List[RetreatEvent] = []
     for page in range(pages):
         headers = {
@@ -43,7 +43,11 @@ def fetch_retreat_events(
             logger.info("Fetching %s", base_url)
             response = requests.get(base_url, params=page_params, headers=headers)
             request_url = response.url
-        logger.debug("Response status: %s", getattr(response, "status_code", "N/A"))
+        logger.debug(
+            "Response status: %s for %s",
+            getattr(response, "status_code", "N/A"),
+            request_url,
+        )
         response.raise_for_status()
 
         html = response.text
@@ -64,7 +68,9 @@ def fetch_retreat_events(
                     html_parts.append(str(data))
             html = "".join(html_parts)
 
+        logger.debug("Received %d bytes", len(html))
         events = parser(html, request_url)
+        logger.debug("%d events parsed from page %d", len(events), page)
         all_events.extend(events)
 
     logger.info("%d retreat events found", len(all_events))
@@ -98,10 +104,9 @@ def fetch_all_sites(pages: int = 3) -> List[RetreatEvent]:
     events: List[RetreatEvent] = []
     events.extend(
         fetch_retreat_events(
-            sfzc.BASE_AJAX,
+            sfzc.CALENDAR_URL,
             pages=pages,
             parser=sfzc.parse_events,
-            params=sfzc.DEFAULT_PARAMS,
         )
     )
     events.extend(fetch_retreat_events(IRC_URL, pages=1, parser=irc.parse_events))
@@ -129,10 +134,9 @@ def main() -> None:
 
     if args.site == "sfzc":
         events = fetch_retreat_events(
-            sfzc.BASE_AJAX,
+            sfzc.CALENDAR_URL,
             pages=args.pages,
             parser=sfzc.parse_events,
-            params=sfzc.DEFAULT_PARAMS,
         )
     elif args.site == "irc":
         events = fetch_retreat_events(IRC_URL, pages=1, parser=irc.parse_events)
