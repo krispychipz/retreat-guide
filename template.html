@@ -37,13 +37,16 @@
       <option value="{{ c }}">{{ c }}</option>
       {% endfor %}
     </select>
+    <input id="start-date" type="date" />
+    <input id="end-date" type="date" />
   </div>
 
   <!-- Retreat List -->
   {% for r in retreats %}
-    <div class="retreat" data-center="{{ r.location.practice_center }}">
+    <div class="retreat" data-center="{{ r.location.practice_center }}" data-start="{{ (r.dates.start or '')[:10] }}" data-end="{{ (r.dates.end or '')[:10] }}">
       <div class="title">{{ r.title }}</div>
       <div class="meta">{{ (r.dates.start or '')[:10] }} – {{ (r.dates.end or '')[:10] }} | {{ r.location.practice_center }}, {{ r.location.city }}, {{ r.location.country }}</div>
+      {% if r.teachers %}<div class="meta">Teachers: {{ r.teachers | join(', ') }}</div>{% endif %}
       <div class="desc">{{ r.description }}</div>
       <div class="more" onclick="toggleDesc(this)">Show more</div>
       <a class="visit-btn" href="{{ r.link }}" target="_blank">Visit Site</a>
@@ -60,18 +63,28 @@
     function applyFilters() {
       const kw = document.getElementById('keyword').value.toLowerCase();
       const center = document.getElementById('center').value.toLowerCase();
+      const startVal = document.getElementById('start-date').value;
+      const endVal = document.getElementById('end-date').value;
+      const startDate = startVal ? new Date(startVal) : null;
+      const endDate = endVal ? new Date(endVal) : null;
       document.querySelectorAll('.retreat').forEach(r => {
         const title = r.querySelector('.title').innerText.toLowerCase();
         const desc = r.querySelector('.desc').innerText.toLowerCase();
         const rc = (r.dataset.center || '').toLowerCase();
+        const rStart = r.dataset.start ? new Date(r.dataset.start) : null;
+        const rEnd = r.dataset.end ? new Date(r.dataset.end) : null;
         const matchKw = !kw || title.includes(kw) || desc.includes(kw);
         const matchCenter = !center || rc === center;
-        r.style.display = matchKw && matchCenter ? '' : 'none';
+        const matchStart = !startDate || (rStart && rStart >= startDate);
+        const matchEnd = !endDate || (rEnd && rEnd <= endDate);
+        r.style.display = matchKw && matchCenter && matchStart && matchEnd ? '' : 'none';
       });
     }
 
     document.getElementById('keyword').addEventListener('input', applyFilters);
     document.getElementById('center').addEventListener('change', applyFilters);
+    document.getElementById('start-date').addEventListener('change', applyFilters);
+    document.getElementById('end-date').addEventListener('change', applyFilters);
   </script>
 
 </body>
