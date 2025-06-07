@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Meditation Retreats</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; max-width: 900px; margin: auto; background: #f9f9f9; }
+    .filters { display: flex; gap: 1rem; margin-bottom: 2rem; }
+    .retreat { border-top: 1px solid #ccc; padding: 1rem 0; }
+    .title { font-weight: bold; font-size: 1.2rem; }
+    .meta { color: #555; margin-bottom: 0.5rem; }
+    .desc { margin-bottom: 0.5rem; }
+    .more { color: #007BFF; cursor: pointer; }
+    .full-desc { display: none; margin-top: 0.5rem; }
+    .visit-btn { margin-top: 0.5rem; display: inline-block; background: #333; color: #fff; padding: 0.4rem 0.8rem; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+  <h1>Meditation Retreats</h1>
+
+  <!-- Filter Bar Placeholder -->
+  <div class="filters">
+    <input type="text" placeholder="Keyword..." />
+    <select><option>Practice Center</option></select>
+    <select><option>Teacher</option></select>
+    <input type="date" />
+  </div>
+
+  <!-- Retreat List -->
+  
+    <div class="retreat">
+      <div class="title">1 week Insight Retreat</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discu...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discussion with the teachers. Suitable for both beginners and experienced practitioners.</div>
+        <a class="visit-btn" href="https://www.insightretreatcenter.org/online-retreats/online-retreat-schedule/" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">1 week Insight Retreat</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discu...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discussion with the teachers. Suitable for both beginners and experienced practitioners.</div>
+        <a class="visit-btn" href="" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">2 week Mindfulness of Mind Retreat for Experienced Students</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">Exploration of the mindfulness practice as taught by Sayadaw U Tejaniya, encouraging relaxation of body and mind while paying close attentio...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>Exploration of the mindfulness practice as taught by Sayadaw U Tejaniya, encouraging relaxation of body and mind while paying close attention to present moment experience and the quality of the mind that meditates. Self-directed practice with guidance provided through teachings, Q & A sessions and discussions with the teacher.</div>
+        <a class="visit-btn" href="" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">1 week Metta Retreat</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">A silent metta (lovingkindness) retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and pra...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>A silent metta (lovingkindness) retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discussion with the teachers. Suitable for both beginners and experienced practitioners.</div>
+        <a class="visit-btn" href="" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">1 week Insight Retreat</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discu...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discussion with the teachers. Suitable for both beginners and experienced practitioners.</div>
+        <a class="visit-btn" href="" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">5 day Insight Retreat in Spanish (Español)</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">Retiro de meditación y atención plena en silencio con periodos de meditación, pláticas de Dharma. Instrucción de yoga con Ángela Salgado Lóp...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>Retiro de meditación y atención plena en silencio con periodos de meditación, pláticas de Dharma. Instrucción de yoga con Ángela Salgado López y pláticas individuales con los maestros para hablar sobre la práctica.</div>
+        <a class="visit-btn" href="" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">28 day Experienced Practitioners Retreat</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">A silent mindfulness retreat for experienced yogis that includes alternating sitting and walking meditation, instruction, dharma talks, work...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>A silent mindfulness retreat for experienced yogis that includes alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discussion with the teacher.</div>
+        <a class="visit-btn" href="https://www.insightretreatcenter.org/online-retreats/online-retreat-schedule/" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">1 week Insight Retreat</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discu...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discussion with the teachers. Suitable for both beginners and experienced practitioners.</div>
+        <a class="visit-btn" href="" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">1 week Insight Retreat</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discu...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discussion with the teachers. Suitable for both beginners and experienced practitioners.</div>
+        <a class="visit-btn" href="https://www.insightretreatcenter.org/online-retreats/online-retreat-schedule/" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">1 week Insight Retreat</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discu...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discussion with the teachers. Suitable for both beginners and experienced practitioners.</div>
+        <a class="visit-btn" href="https://www.insightretreatcenter.org/online-retreats/online-retreat-schedule/" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">1 week Insight Retreat</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discu...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discussion with the teachers. Suitable for both beginners and experienced practitioners.</div>
+        <a class="visit-btn" href="https://www.insightretreatcenter.org/online-retreats/online-retreat-schedule/" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">1 week "Insight Santa Cruz" Insight Retreat</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discu...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discussion with the teacher. Suitable for both beginners and experienced practitioners.</div>
+        <a class="visit-btn" href="" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">5 day Insight Retreat</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discu...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discussion with the teachers. Suitable for both beginners and experienced practitioners.</div>
+        <a class="visit-btn" href="" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">1 week Insight Retreat</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discu...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discussion with the teachers. Suitable for both beginners and experienced practitioners.</div>
+        <a class="visit-btn" href="" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">6 day Insight Retreat for People in their 20s and 30s</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discu...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discussion with the teachers. Suitable for both beginners and experienced practitioners.This retreat is limited to people in their 20s and 30s.</div>
+        <a class="visit-btn" href="" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">1 week LGBTQIA+ Insight Retreat</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">A silent mindfulness retreat for the LGBTQIA+ community. This is an opportunity to come together in the safety of community, embracing all o...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>A silent mindfulness retreat for the LGBTQIA+ community. This is an opportunity to come together in the safety of community, embracing all of ourselves as we cultivate the wholesome and loving qualities of our hearts and minds. There will be alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discussion with the teachers. Suitable for both beginners and experienced practitioners who self-identify as LGBTQIA+ or genderqueer.</div>
+        <a class="visit-btn" href="" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">1 week Insight Retreat</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discu...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discussion with the teachers. Suitable for both beginners and experienced practitioners.</div>
+        <a class="visit-btn" href="" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">1 week Insight Retreat</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discu...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discussion with the teachers. Suitable for both beginners and experienced practitioners.</div>
+        <a class="visit-btn" href="" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">2 week Insight Retreat for Experienced Practitioners</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">A silent mindfulness retreat for experienced yogis that includes alternating sitting and walking meditation, instruction, dharma talks, work...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>A silent mindfulness retreat for experienced yogis that includes alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discussion with the teacher.</div>
+        <a class="visit-btn" href="" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">1 week Insight Retreat</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discu...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discussion with the teachers. Suitable for both beginners and experienced practitioners.</div>
+        <a class="visit-btn" href="" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">1 week Awareness and Wisdom Retreat</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">Exploration of the mindfulness practice as taught by Sayadaw U Tejaniya, encouraging awareness and wisdom through relaxation of body and min...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>Exploration of the mindfulness practice as taught by Sayadaw U Tejaniya, encouraging awareness and wisdom through relaxation of body and mind while paying close attention to present moment experience and the quality of the mind that meditates. Primarily self-directed practice with guidance provided through teachings, Q & A sessions, and discussions with the teacher.Read more about the style and form of this Awareness & Wisdom retreat.</div>
+        <a class="visit-btn" href="https://www.insightretreatcenter.org/online-retreats/online-retreat-schedule/" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">1 week Insight Retreat</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discu...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discussion with the teachers. Suitable for both beginners and experienced practitioners.</div>
+        <a class="visit-btn" href="" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">2 week Mindfulness of Mind Retreat for Experienced Students</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">Exploration of the mindfulness practice as taught by Sayadaw U Tejaniya, encouraging relaxation of body and mind while paying close attentio...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>Exploration of the mindfulness practice as taught by Sayadaw U Tejaniya, encouraging relaxation of body and mind while paying close attention to present moment experience and the quality of the mind that meditates. Self-directed practice with guidance provided through teachings, Q & A sessions and discussions with the teacher.</div>
+        <a class="visit-btn" href="" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">1 week Insight Retreat in Spanish (Español)</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">Retiro de meditación y atención plena en silencio con periodos de meditación, pláticas de Dharma. Instrucción de yoga con Ángela Salgado Lóp...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>Retiro de meditación y atención plena en silencio con periodos de meditación, pláticas de Dharma. Instrucción de yoga con Ángela Salgado López y pláticas individuales con los maestros para hablar sobre la práctica.</div>
+        <a class="visit-btn" href="" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">6 day Insight Retreat</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discu...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discussion with the teachers. Suitable for both beginners and experienced practitioners.</div>
+        <a class="visit-btn" href="" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">1 week "Insight Santa Cruz" Insight Retreat</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discu...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discussion with the teacher. Suitable for both beginners and experienced practitioners.</div>
+        <a class="visit-btn" href="" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">29 day Insight Retreat for Experienced Practitioners</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">A silent mindfulness retreat for experienced yogis that includes alternating sitting and walking meditation, instruction, dharma talks, work...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>A silent mindfulness retreat for experienced yogis that includes alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discussion with the teacher.</div>
+        <a class="visit-btn" href="" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">5 day Insight Retreat</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discu...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discussion with the teachers. Suitable for both beginners and experienced practitioners.</div>
+        <a class="visit-btn" href="" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">1 week Insight Retreat</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discu...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discussion with the teachers. Suitable for both beginners and experienced practitioners.</div>
+        <a class="visit-btn" href="" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">4 day Insight Retreat for People in their 20s and 30s</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discu...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discussion with the teachers. Suitable for both beginners and experienced practitioners.This retreat is limited to people in their 20s and 30s.</div>
+        <a class="visit-btn" href="" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">1 week Insight Retreat</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discu...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discussion with the teachers. Suitable for both beginners and experienced practitioners.</div>
+        <a class="visit-btn" href="" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">1 week Insight Retreat</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discu...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>A silent mindfulness retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discussion with the teachers. Suitable for both beginners and experienced practitioners.</div>
+        <a class="visit-btn" href="" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+    <div class="retreat">
+      <div class="title">1 week Metta Retreat</div>
+      <div class="meta"> –  | None, None, None</div>
+      <div class="desc">A silent metta (lovingkindness) retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and pra...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>A silent metta (lovingkindness) retreat with alternating sitting and walking meditation, instruction, dharma talks, work meditation, and practice discussion with the teachers. Suitable for both beginners and experienced practitioners.</div>
+        <a class="visit-btn" href="" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  
+
+  <script>
+    function toggleDesc(el) {
+      const desc = el.nextElementSibling;
+      const shown = desc.style.display === "block";
+      desc.style.display = shown ? "none" : "block";
+      el.innerText = shown ? "Show more" : "Show less";
+    }
+  </script>
+
+</body>
+</html>
