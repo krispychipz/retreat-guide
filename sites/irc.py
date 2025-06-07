@@ -25,27 +25,48 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
         # Teachers
         teachers = [a.get_text(strip=True)
                     for a in detail_p.find_all('a', href=True)]
+        # Some teacher names may appear as plain text after the title
+        first_strong = detail_p.find('strong')
+        if first_strong:
+            node = first_strong.next_sibling
+            teacher_txt = ""
+            while node and getattr(node, 'name', None) != 'br':
+                if isinstance(node, str):
+                    teacher_txt += node
+                else:
+                    teacher_txt += node.get_text(" ", strip=True)
+                node = node.next_sibling
+            teacher_txt = teacher_txt.strip(" ,\u2013-")
+            if teacher_txt:
+                teachers.extend(
+                    [t.strip() for t in re.split(r",| and |/", teacher_txt) if t.strip()]
+                )
 
         # Raw date text is right after the first <br>
         dates_text = ''
         br = detail_p.find('br')
         if br:
             node = br.next_sibling
-            while node and (not isinstance(node, str) or not node.strip()):
+            while node and isinstance(node, str) and not node.strip():
                 node = node.next_sibling
-            if isinstance(node, str):
-                # strip off any trailing hours info
-                dates_text = node.split('  -  ')[0].strip()
+            if node:
+                if isinstance(node, str):
+                    text = node
+                else:
+                    text = node.get_text(' ', strip=True)
+                dates_text = re.split(r'\s+-\s+', text)[0].strip()
 
-        # Parse date range, e.g. "June 29 to July 13, 2025"
-        m = re.match(r'([A-Za-z]+ \d{1,2})(?:,? (\d{4}))? to ([A-Za-z]+ \d{1,2}), (\d{4})',
-                     dates_text)
+        # Parse date range, e.g. "June 29 to July 13, 2025" or "June 29 – July 13, 2025"
+        m = re.search(
+            r'([A-Za-z]+ \d{1,2})(?:,? (\d{4}))?\s*(?:to|[-\u2013])\s*([A-Za-z]+ \d{1,2})(?:,? (\d{4}))?',
+            dates_text,
+        )
         if m:
             start_str, start_year, end_str, end_year = m.groups()
-            year = end_year
-            start_year = start_year or year
+            end_year = end_year or start_year
+            start_year = start_year or end_year
             start_dt = datetime.strptime(f"{start_str}, {start_year}", "%B %d, %Y")
-            end_dt   = datetime.strptime(f"{end_str}, {end_year}", "%B %d, %Y")
+            end_dt = datetime.strptime(f"{end_str}, {end_year}", "%B %d, %Y")
             dates = RetreatDates(start=start_dt, end=end_dt)
         else:
             # fallback to None if parse fails
