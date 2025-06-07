@@ -58,7 +58,10 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
             title = re.sub(r",\s*\d{1,2}/\d{1,2}$", "", title_raw)
             link = link_tag["href"] if link_tag and link_tag.has_attr("href") else ""
 
-            if "retreat" not in title.lower():
+            keywords = ["sesshin", "sitting", "zazenkai"]
+            title_lower = title.lower()
+
+            if not any(kw in title_lower for kw in keywords):
                 logger.debug("Skipping non-retreat event: %s", title)
                 continue
 
