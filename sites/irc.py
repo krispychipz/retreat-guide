@@ -71,10 +71,13 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
         description = desc_p.get_text(strip=True)
         logger.debug("Description: %s", description[:60])
 
-        # Registration link: look for a REGISTER link in the list items
+        # Registration link: prefer an "APPLY ONLINE" link if present
         link = ''
         ul = container.find('ul')
-        if ul:
+        apply_link = container.find('a', string=re.compile(r'APPLY\s*ONLINE', re.I))
+        if apply_link and apply_link.has_attr('href'):
+            link = apply_link['href']
+        elif ul:
             reg = ul.find('a', string=re.compile(r'REGISTER', re.I))
             if reg and reg.has_attr('href'):
                 link = reg['href']
