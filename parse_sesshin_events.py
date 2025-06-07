@@ -87,12 +87,19 @@ def main() -> None:
     logging.basicConfig(level=log_level, format="%(levelname)s:%(message)s")
 
     events = fetch_retreat_events(sfzc.BASE_URL, pages=args.pages)
-    for event in events:
-        print(f"{event['date']} - {event['title']}")
-        print(event['practice_center'])
-        print(event['link'])
-        print(f"Source: {event['source']}")
-        print()
+
+    if args.output:
+        xml = events_to_xml(events)
+        with open(args.output, "w", encoding="utf-8") as fh:
+            fh.write(xml)
+        print(f"Wrote {len(events)} events to {args.output}")
+    else:
+        for event in events:
+            print(f"{event['date']} - {event['title']}")
+            print(event['practice_center'])
+            print(event['link'])
+            print(f"Source: {event['source']}")
+            print()
 
 
 

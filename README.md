@@ -20,8 +20,8 @@ pip install -r requirements.txt
 ## Usage
 
 Run the script (it will fetch several pages from the site's AJAX endpoint). By default
-it prints results to the console, but you can also write them to an XML file using
-`--output`:
+it prints results to the console.  Pass `--output` to write the collected events
+to an XML file instead of printing them:
 
 ```bash
 python parse_sesshin_events.py
