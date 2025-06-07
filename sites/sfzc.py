@@ -23,30 +23,55 @@ HEADERS = {
 }
 
 
-def fetch_description(url: str) -> str:
-    """Fetch and return a description from an event detail page."""
+def fetch_description(url: str) -> tuple[str, List[str]]:
+    """Fetch description and teacher names from an event detail page."""
     try:
         response = requests.get(url, headers=HEADERS, timeout=10)
         response.raise_for_status()
     except Exception as exc:  # noqa: BLE001
         logger.debug("Failed to fetch %s: %s", url, exc)
-        return ""
+        return "", []
 
     soup = BeautifulSoup(response.text, "html.parser")
 
+    description = ""
     meta = soup.find("meta", property="og:description")
     if meta and meta.get("content"):
-        return meta["content"].strip()
+        description = meta["content"].strip()
+    else:
+        meta = soup.find("meta", attrs={"name": "description"})
+        if meta and meta.get("content"):
+            description = meta["content"].strip()
+        else:
+            body_div = soup.select_one("div.field--name-body")
+            if body_div:
+                description = body_div.get_text(" ", strip=True)
 
-    meta = soup.find("meta", attrs={"name": "description"})
-    if meta and meta.get("content"):
-        return meta["content"].strip()
+    teachers: List[str] = []
+    teacher_el = soup.find(string=re.compile(r"Teachers?:", re.I))
+    if teacher_el:
+        container = (
+            teacher_el.parent.parent
+            if getattr(teacher_el, "parent", None)
+            and getattr(teacher_el.parent, "parent", None)
+            else teacher_el.parent
+        )
+        container_text = container.get_text(" ", strip=True)
+        m = re.search(r"Teachers?:\s*(.*)", container_text, re.I)
+        if m:
+            teachers_str = m.group(1)
+            teachers_str = re.sub(r"\band\b", ",", teachers_str, flags=re.I)
+            teachers = [
+                t.strip() for t in re.split(r",|/|&", teachers_str) if t.strip()
+            ]
+        else:
+            for a in container.find_all("a"):
+                name = a.get_text(strip=True)
+                if name:
+                    teachers.append(name)
 
-    body_div = soup.select_one("div.field--name-body")
-    if body_div:
-        return body_div.get_text(" ", strip=True)
+    return description, teachers
 
-    return ""
 
 def parse_events(html: str, source: str) -> List[RetreatEvent]:
     """Parse retreat events from SFZC HTML snippet and return dataclasses."""
@@ -107,7 +132,11 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
                 )
 
             link_tag = cols[2].find("a")
-            title_raw = link_tag.get_text(strip=True) if link_tag else cols[2].get_text(strip=True)
+            title_raw = (
+                link_tag.get_text(strip=True)
+                if link_tag
+                else cols[2].get_text(strip=True)
+            )
             title = re.sub(r",\s*\d{1,2}/\d{1,2}$", "", title_raw)
             link = link_tag["href"] if link_tag and link_tag.has_attr("href") else ""
 
@@ -118,13 +147,16 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
                 logger.debug("Skipping non-retreat event: %s", title)
                 continue
 
-            description = fetch_description(link) if link else ""
+            if link:
+                description, teachers = fetch_description(link)
+            else:
+                description, teachers = "", []
 
             events.append(
                 RetreatEvent(
                     title=title,
                     dates=dates,
-                    teachers=[],
+                    teachers=teachers,
                     location=location,
                     description=description,
                     link=link,

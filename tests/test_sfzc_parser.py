@@ -7,7 +7,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from sites import sfzc
 from models import RetreatLocation, RetreatDates
 
-SAMPLE_TEMPLATE = '''
+SAMPLE_TEMPLATE = """
 <table class="views-table">
 <caption>Saturday, Jun 29, 2025</caption>
 <tbody>
@@ -18,7 +18,7 @@ SAMPLE_TEMPLATE = '''
 </tr>
 </tbody>
 </table>
-'''
+"""
 
 
 def parse_single(center: str):
@@ -56,3 +56,29 @@ def test_tassajara_address():
         evt.other.get("address")
         == "39171 Tassajara Road Carmel Valley, CA 93924 Jamesburg"
     )
+
+
+def test_fetch_description_teachers(monkeypatch):
+    sample_detail = """
+    <html><head>
+        <meta property="og:description" content="An engaging retreat" />
+    </head><body>
+        <p><strong>Teachers:</strong> Teacher One, Teacher Two</p>
+    </body></html>
+    """
+
+    class MockResp:
+        def __init__(self, text: str):
+            self.text = text
+
+        def raise_for_status(self):
+            pass
+
+    def mock_get(url, headers=None, timeout=10):  # noqa: D401
+        return MockResp(sample_detail)
+
+    monkeypatch.setattr("requests.get", mock_get)
+
+    desc, teachers = sfzc.fetch_description("https://example.com/retreat")
+    assert desc == "An engaging retreat"
+    assert teachers == ["Teacher One", "Teacher Two"]
