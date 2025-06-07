@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Meditation Retreats</title>
+  <style>
+    body { font-family: sans-serif; padding: 2rem; max-width: 900px; margin: auto; background: #f9f9f9; }
+    .filters { display: flex; gap: 1rem; margin-bottom: 2rem; }
+    .retreat { border-top: 1px solid #ccc; padding: 1rem 0; }
+    .title { font-weight: bold; font-size: 1.2rem; }
+    .meta { color: #555; margin-bottom: 0.5rem; }
+    .desc { margin-bottom: 0.5rem; }
+    .more { color: #007BFF; cursor: pointer; }
+    .full-desc { display: none; margin-top: 0.5rem; }
+    .visit-btn { margin-top: 0.5rem; display: inline-block; background: #333; color: #fff; padding: 0.4rem 0.8rem; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+  <h1>Meditation Retreats</h1>
+
+  <!-- Filter Bar Placeholder -->
+  <div class="filters">
+    <input type="text" placeholder="Keyword..." />
+    <select><option>Practice Center</option></select>
+    <select><option>Teacher</option></select>
+    <input type="date" />
+  </div>
+
+  <!-- Retreat List -->
+  {% for r in retreats %}
+    <div class="retreat">
+      <div class="title">{{ r.title }}</div>
+      <div class="meta">{{ r.dates.start[:10] }} – {{ r.dates.end[:10] }} | {{ r.location.practice_center }}, {{ r.location.city }}, {{ r.location.country }}</div>
+      <div class="desc">{{ r.description[:140] }}...</div>
+      <div class="more" onclick="toggleDesc(this)">Show more</div>
+      <div class="full-desc" style="display:none;">
+        <div>{{ r.description }}</div>
+        <a class="visit-btn" href="{{ r.link }}" target="_blank">Visit Site</a>
+      </div>
+    </div>
+  {% endfor %}
+
+  <script>
+    function toggleDesc(el) {
+      const desc = el.nextElementSibling;
+      const shown = desc.style.display === "block";
+      desc.style.display = shown ? "none" : "block";
+      el.innerText = shown ? "Show more" : "Show less";
+    }
+  </script>
+
+</body>
+</html>
