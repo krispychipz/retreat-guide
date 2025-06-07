@@ -31,7 +31,7 @@
   {% for r in retreats %}
     <div class="retreat">
       <div class="title">{{ r.title }}</div>
-      <div class="meta">{{ r.dates.start[:10] }} – {{ r.dates.end[:10] }} | {{ r.location.practice_center }}, {{ r.location.city }}, {{ r.location.country }}</div>
+      <div class="meta">{{ (r.dates.start or '')[:10] }} – {{ (r.dates.end or '')[:10] }} | {{ r.location.practice_center }}, {{ r.location.city }}, {{ r.location.country }}</div>
       <div class="desc">{{ r.description[:140] }}...</div>
       <div class="more" onclick="toggleDesc(this)">Show more</div>
       <div class="full-desc" style="display:none;">
