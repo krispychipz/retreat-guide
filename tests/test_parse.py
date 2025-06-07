@@ -7,9 +7,9 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 from parse_retreat_events import (
     fetch_retreat_events,
     fetch_all_retreats,
-    events_to_xml,
     main as parse_main,
 )
+import json
 from models import RetreatEvent, RetreatDates, RetreatLocation
 
 SAMPLE_HTML_RETREAT = '''
@@ -89,22 +89,6 @@ def test_fetch_all_retreats(monkeypatch):
     assert evt.other.get("source") == "https://one"
 
 
-def test_events_to_xml():
-    events = [
-        RetreatEvent(
-            title="3-Day Retreat",
-            dates=RetreatDates(start=datetime(2025, 6, 1), end=datetime(2025, 6, 1)),
-            teachers=[],
-            location=RetreatLocation(practice_center="Green Gulch"),
-            description="",
-            link="https://example.com/retreat",
-            other={"source": "https://dummy?page=0"},
-        )
-    ]
-    xml = events_to_xml(events)
-    assert "<retreats>" in xml
-    assert "<title>3-Day Retreat</title>" in xml
-
 
 def test_main_writes_output(tmp_path, monkeypatch):
     def mock_fetch(url, pages=3, parser=None):
@@ -122,9 +106,9 @@ def test_main_writes_output(tmp_path, monkeypatch):
 
     monkeypatch.setattr("parse_retreat_events.fetch_retreat_events", mock_fetch)
 
-    output = tmp_path / "events.xml"
+    output = tmp_path / "events.json"
     monkeypatch.setattr(sys, "argv", ["prog", "--output", str(output)])
     parse_main()
 
-    contents = output.read_text(encoding="utf-8")
-    assert "<retreats>" in contents
+    contents = json.loads(output.read_text(encoding="utf-8"))
+    assert contents[0]["title"] == "3-Day Retreat"

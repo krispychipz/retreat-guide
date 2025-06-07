@@ -3,7 +3,7 @@ from dataclasses import asdict
 from typing import Callable, List
 
 import requests
-import xml.etree.ElementTree as ET
+import json
 
 from models import RetreatEvent
 from sites import sfzc, irc, spiritrock
@@ -79,49 +79,9 @@ def fetch_all_retreats(
     return all_events
 
 
-def events_to_xml(events: List[RetreatEvent]) -> str:
-    """Convert a list of events to an XML string."""
-    root = ET.Element("retreats")
-    for event in events:
-        retreat_elem = ET.SubElement(root, "retreat")
-        data = asdict(event)
-
-        # Flatten dates
-        dates = data.pop("dates")
-        date_elem = ET.SubElement(retreat_elem, "dates")
-        start_elem = ET.SubElement(date_elem, "start")
-        start_elem.text = dates["start"].isoformat()
-        end_elem = ET.SubElement(date_elem, "end")
-        end_elem.text = dates["end"].isoformat()
-
-        # Location
-        location = data.pop("location")
-        location_elem = ET.SubElement(retreat_elem, "location")
-        for key, value in location.items():
-            child = ET.SubElement(location_elem, key)
-            if value is not None:
-                child.text = str(value)
-
-        # Teachers list
-        teachers = data.pop("teachers")
-        teachers_elem = ET.SubElement(retreat_elem, "teachers")
-        for teacher in teachers:
-            t_child = ET.SubElement(teachers_elem, "teacher")
-            t_child.text = teacher
-
-        # Remaining fields
-        for key, value in data.items():
-            if isinstance(value, dict):
-                sub = ET.SubElement(retreat_elem, key)
-                for sub_key, sub_val in value.items():
-                    child = ET.SubElement(sub, sub_key)
-                    child.text = str(sub_val)
-            else:
-                child = ET.SubElement(retreat_elem, key)
-                child.text = str(value)
-
-    xml_bytes = ET.tostring(root, encoding="utf-8", xml_declaration=True)
-    return xml_bytes.decode("utf-8")
+def events_to_json(events: List[RetreatEvent]) -> str:
+    """Convert a list of events to a JSON string."""
+    return json.dumps([asdict(event) for event in events], default=str, indent=2)
 
 
 def fetch_all_sites(pages: int = 3) -> List[RetreatEvent]:
@@ -145,7 +105,7 @@ def main() -> None:
         default="all",
         help="Which site to parse",
     )
-    parser.add_argument("--output", type=str, help="Write events to this XML file")
+    parser.add_argument("--output", type=str, help="Write events to this JSON file")
     args = parser.parse_args()
 
     log_level = logging.DEBUG if args.debug else logging.INFO
@@ -161,15 +121,17 @@ def main() -> None:
         events = fetch_all_sites(pages=args.pages)
 
     if args.output:
-        xml = events_to_xml(events)
+        json_str = events_to_json(events)
         with open(args.output, "w", encoding="utf-8") as fh:
-            fh.write(xml)
+            fh.write(json_str)
         print(f"Wrote {len(events)} events to {args.output}")
     else:
         for event in events:
-            print(f"{event.dates.start:%B %d, %Y} - {event.title}")
-            print(event.location.practice_center)
-            print(event.link)
+            start_dt = event.dates.start
+            date_str = start_dt.strftime("%B %d, %Y") if start_dt else "Unknown Date"
+            print(f"{date_str} - {event.title}")
+            print(event.location.practice_center or "")
+            print(event.link or "")
             print(f"Source: {event.other.get('source', '')}")
             print()
 
