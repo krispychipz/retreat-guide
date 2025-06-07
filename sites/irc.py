@@ -114,6 +114,14 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
                 loc.region = parts[2]
             if len(parts) > 3:
                 loc.country = parts[3]
+
+        # Override with known Insight Retreat Center location details
+        loc.practice_center = "Insight Retreat Center"
+        loc.city = "Santa Cruz"
+        loc.region = "CA"
+        loc.country = "USA"
+        other["address"] = "1906 Glen Canyon Rd, Santa Cruz, CA 95060"
+
         logger.debug("Location: %s", loc)
 
         events.append(RetreatEvent(
