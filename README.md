@@ -37,3 +37,9 @@ python parse_sesshin_events.py --pages 5 --debug
 
 The script will print the date, practice center, link, and source URL for events
 whose title contains the word "retreat".
+
+## Data Structures
+
+A set of dataclasses is provided in `models.py` for parsers that need a structured representation of retreat events.
+The classes `RetreatEvent`, `RetreatDates`, and `RetreatLocation` can be imported and used across sites.
+
