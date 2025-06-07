@@ -63,7 +63,14 @@ def test_fetch_description_teachers(monkeypatch):
     <html><head>
         <meta property="og:description" content="An engaging retreat" />
     </head><body>
-        <p><strong>Teachers:</strong> Teacher One, Teacher Two</p>
+        <div class="field field--name-field-teachers field--type-entity-reference field--label-inline">
+            <div class="field__label">Teachers</div>
+            <div class="field__items">
+                <div class="field__item"><a href="/teachers/teacher-one">Teacher One</a></div>
+                <div class="field__item"><a href="/teachers/teacher-two">Teacher Two</a></div>
+            </div>
+        </div>
+
     </body></html>
     """
 

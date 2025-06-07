@@ -34,44 +34,27 @@ def fetch_description(url: str) -> tuple[str, List[str]]:
 
     soup = BeautifulSoup(response.text, "html.parser")
 
+    meta_og = soup.find("meta", property="og:description")
+    meta_desc = soup.find("meta", attrs={"name": "description"})
+    body_div = soup.select_one("div.field--name-body")
+
     description = ""
-    meta = soup.find("meta", property="og:description")
-    if meta and meta.get("content"):
-        description = meta["content"].strip()
-    else:
-        meta = soup.find("meta", attrs={"name": "description"})
-        if meta and meta.get("content"):
-            description = meta["content"].strip()
-        else:
-            body_div = soup.select_one("div.field--name-body")
-            if body_div:
-                description = body_div.get_text(" ", strip=True)
+    if meta_og and meta_og.get("content"):
+        description = meta_og["content"].strip()
+    elif meta_desc and meta_desc.get("content"):
+        description = meta_desc["content"].strip()
+    elif body_div:
+        description = body_div.get_text(" ", strip=True)
 
     teachers: List[str] = []
-    teacher_el = soup.find(string=re.compile(r"Teachers?:", re.I))
-    if teacher_el:
-        container = (
-            teacher_el.parent.parent
-            if getattr(teacher_el, "parent", None)
-            and getattr(teacher_el.parent, "parent", None)
-            else teacher_el.parent
-        )
-        container_text = container.get_text(" ", strip=True)
-        m = re.search(r"Teachers?:\s*(.*)", container_text, re.I)
-        if m:
-            teachers_str = m.group(1)
-            teachers_str = re.sub(r"\band\b", ",", teachers_str, flags=re.I)
-            teachers = [
-                t.strip() for t in re.split(r",|/|&", teachers_str) if t.strip()
-            ]
-        else:
-            for a in container.find_all("a"):
-                name = a.get_text(strip=True)
-                if name:
-                    teachers.append(name)
+    teacher_div = soup.select_one("div.field--name-field-teachers")
+    if teacher_div:
+        for item in teacher_div.select("div.field__item"):
+            name = item.get_text(" ", strip=True)
+            if name:
+                teachers.append(name)
 
     return description, teachers
-
 
 def parse_events(html: str, source: str) -> List[RetreatEvent]:
     """Parse retreat events from SFZC HTML snippet and return dataclasses."""
