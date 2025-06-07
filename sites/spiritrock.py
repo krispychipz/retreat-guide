@@ -13,6 +13,9 @@ HEADERS = {
     "X-Algolia-Agent": "Algolia for JavaScript (4.24.0); Browser (lite)",
 }
 
+# — helper to strip out HTML from the description —
+def strip_html(html: str) -> str:
+    return BeautifulSoup(html or "", "html.parser").get_text(separator=" ", strip=True)
 
 def fetch_algolia_page(page: int = 0, hits_per_page: int = 100) -> List[dict]:
     """Return a single page of results from the Spirit Rock Algolia index."""
@@ -21,9 +24,7 @@ def fetch_algolia_page(page: int = 0, hits_per_page: int = 100) -> List[dict]:
     resp.raise_for_status()
     return resp.json().get("hits", [])
 
-
-def parse_algolia_events(max_pages: int = 10) -> List[RetreatEvent]:
-    """Fetch and parse retreat events from Spirit Rock's Algolia feed."""
+def parse_algolia_events(max_pages: int=10) -> List[RetreatEvent]:
     events: List[RetreatEvent] = []
     for page in range(max_pages):
         hits = fetch_algolia_page(page)
@@ -31,55 +32,46 @@ def parse_algolia_events(max_pages: int = 10) -> List[RetreatEvent]:
             break
 
         for h in hits:
+            # 1) Basic fields
             title = h.get("title", "")
-            link = h.get("url", "")
-            start_str = h.get("startDate")
-            end_str = h.get("endDate")
-            teachers = h.get("teacherNames", [])
-            description = h.get("description", "")
+            link  = h.get("url", "")
 
-            def parse_dt(s: Optional[str]):
-                try:
-                    return datetime.fromisoformat(s.replace("Z", "+00:00")) if s else None
-                except Exception:
-                    return None
+            # 2) Description (strip HTML)
+            description = strip_html(h.get("shortDescription"))
 
-            dates = RetreatDates(start=parse_dt(start_str), end=parse_dt(end_str))
+            # 3) Dates (UNIX timestamps → datetime)
+            start_ts = h.get("startDate")
+            end_ts   = h.get("endDate")
+            start_dt = datetime.fromtimestamp(start_ts) if isinstance(start_ts, (int, float)) else None
+            end_dt   = datetime.fromtimestamp(end_ts)   if isinstance(end_ts,   (int, float)) else None
+            dates = RetreatDates(start=start_dt, end=end_dt)
 
-            loc_data = h.get("location", {}) or {}
-            location = RetreatLocation(
-                practice_center=loc_data.get("centerName"),
-                city=loc_data.get("city"),
-                region=loc_data.get("region"),
-                country=loc_data.get("country"),
-            )
+            # 4) Teachers
+            et = h.get("eventTeachers", "")
+            teachers = [name.strip() for name in et.split(",") if name.strip()]
 
+            # 5) Location (Spirit Rock only gives a displayLocation here)
+            loc_str = h.get("displayLocation")
+            location = RetreatLocation(practice_center=loc_str)
+
+            # 6) Other metadata
             other = {
-                k: str(v)
-                for k, v in h.items()
-                if k
-                not in {
-                    "title",
-                    "url",
-                    "startDate",
-                    "endDate",
-                    "teacherNames",
-                    "description",
-                    "location",
-                }
+                "eventCode":      h.get("eventCode", ""),
+                "programType":    h.get("programTypeName", ""),
+                "duration":       h.get("duration", ""),
+                "credits":        str(h.get("creditCount", "")),
+                "postDateString": h.get("postDateString", "")
             }
 
-            events.append(
-                RetreatEvent(
-                    title=title,
-                    dates=dates,
-                    teachers=teachers,
-                    location=location,
-                    description=description,
-                    link=link,
-                    other=other,
-                )
-            )
+            events.append(RetreatEvent(
+                title=title,
+                dates=dates,
+                teachers=teachers,
+                location=location,
+                description=description,
+                link=link,
+                other=other
+            ))
 
     return events
 
@@ -128,8 +120,13 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
             if 'Full' in text:
                 other['Status'] = text
 
-        # 6) Location: Spirit Rock listings often omit location here
+        # 6) Location
         location = RetreatLocation()
+        location.practice_center = "Spirit Rock Meditation Center"
+        location.city = "Woodacre"
+        location.region = "CA"
+        location.country = "USA"
+        other["address"] = "5000 Sir Francis Drake Blvd Box 169, Woodacre, CA 94973"
 
         events.append(RetreatEvent(
             title=title,
