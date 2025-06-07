@@ -1,5 +1,9 @@
-from typing import List, Dict
+from datetime import datetime
+from typing import List
+
 from bs4 import BeautifulSoup
+
+from models import RetreatEvent, RetreatDates, RetreatLocation
 
 # Default AJAX endpoint for SFZC retreat events
 BASE_URL = (
@@ -8,14 +12,29 @@ BASE_URL = (
     "&view_dom_id=56888d420fb7e34a8182ad455f7f35d6ea8af1488c062d10fbeb38f056c886d7"
     "&pager_element=0&page={page}&_drupal_ajax=1"
     "&ajax_page_state%5Btheme%5D=sfzc&ajax_page_state%5Btheme_token%5D="
-    "&ajax_page_state%5Blibraries%5D=eJxlz1FuwyAMBuALETgSMuBQNoMjG9Zlpx9dtLVLXiz8Yf2yA3PXLrD5ACKF3cpSTThrJg5Ai_adSsvX_6nveuXGCV-UShCQ3f2JiSzoIteNG7au9pywLEEQUpRRg8nMmdB3yC7Pcu4tvMHnf6xmA4E8827qkowNyD7FjraNQEVvmIyuX3EeP5c4nqeLtXS8l4QeCKW70ko3umvH6gIomh58xQwV27jCIwTVfBS8q_uptnIahAf50tZHIHqNwkTHyPKry6Hfd5anxQ"
+    "&ajax_page_state%5Blibraries%5D=eJxlz1FuwyAMBuALETgSMuBQNoMjG9Zlpx9dtLVLXiz8Yf2yA3PXLrD5ACKF3cpSTThrJg5Ai_adSsvX_6nveuXGCV-UShCQ3f2JiSzoIteNG7au9pywLEEQUpRGg8nMmdB3yC7Pcu4tvMHnf6xmA4E8827qkowNyD7FjraNQEVvmIyuX3EeP5c4nqeLtXS8l4QeCKW70ko3umvH6gIomh58xQwV27jCIwTVfBS8q_uptnIahAf50tZHIHqNwkTHyPKry6Hfd5anxQ"
 )
 
 
-def parse_events(html: str, source: str) -> List[Dict[str, str]]:
-    """Parse retreat events from SFZC HTML snippet."""
+def _parse_single_date(text: str) -> datetime:
+    """Parse a date string like 'June 1' into a datetime."""
+    text = text.strip()
+    for fmt in ("%B %d, %Y", "%B %d"):
+        try:
+            dt = datetime.strptime(text, fmt)
+            if "%Y" not in fmt:
+                dt = dt.replace(year=datetime.now().year)
+            return dt
+        except ValueError:
+            continue
+    # Fallback to current time if parsing fails
+    return datetime.now()
+
+
+def parse_events(html: str, source: str) -> List[RetreatEvent]:
+    """Parse retreat events from SFZC HTML snippet and return dataclasses."""
     soup = BeautifulSoup(html, "html.parser")
-    events = []
+    events: List[RetreatEvent] = []
     for row in soup.select("tr"):
         title_cell = row.select_one("td.views-field.views-field-title")
         if not title_cell:
@@ -27,13 +46,21 @@ def parse_events(html: str, source: str) -> List[Dict[str, str]]:
         date_cell = row.select_one("td.views-field.views-field-field-dates-1")
         center_cell = row.select_one("td.views-field.views-field-field-practice-center")
         link_elem = title_cell.find("a", href=True)
+
+        date_text = date_cell.get_text(strip=True) if date_cell else ""
+        start = _parse_single_date(date_text)
+
         events.append(
-            {
-                "title": title_text,
-                "date": date_cell.get_text(strip=True) if date_cell else "",
-                "practice_center": center_cell.get_text(strip=True) if center_cell else "",
-                "link": link_elem["href"] if link_elem else "",
-                "source": source,
-            }
+            RetreatEvent(
+                title=title_text,
+                dates=RetreatDates(start=start, end=start),
+                teachers=[],
+                location=RetreatLocation(
+                    practice_center=center_cell.get_text(strip=True) if center_cell else ""
+                ),
+                description="",
+                link=link_elem["href"] if link_elem else "",
+                other={"source": source},
+            )
         )
     return events

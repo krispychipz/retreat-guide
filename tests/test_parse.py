@@ -1,5 +1,6 @@
 import sys
 import os
+from datetime import datetime
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(__file__)))
 
@@ -9,6 +10,7 @@ from parse_sesshin_events import (
     events_to_xml,
     main as parse_main,
 )
+from models import RetreatEvent, RetreatDates, RetreatLocation
 
 SAMPLE_HTML_RETREAT = '''
 <table>
@@ -54,9 +56,10 @@ def test_fetch_retreat_events(monkeypatch):
     monkeypatch.setattr("requests.get", mock_get)
     events = fetch_retreat_events("https://dummy?page={page}", pages=1)
     assert len(events) == 1
-    assert events[0]["title"] == "3-Day Retreat"
-    assert events[0]["practice_center"] == "Green Gulch"
-    assert events[0]["source"] == "https://dummy?page=0"
+    evt = events[0]
+    assert evt.title == "3-Day Retreat"
+    assert evt.location.practice_center == "Green Gulch"
+    assert evt.other.get("source") == "https://dummy?page=0"
 
 
 def test_fetch_all_retreats(monkeypatch):
@@ -81,19 +84,22 @@ def test_fetch_all_retreats(monkeypatch):
     monkeypatch.setattr("requests.get", mock_get)
     events = fetch_all_retreats(list(responses.keys()), pages=1)
     assert len(events) == 1
-    assert events[0]["practice_center"] == "Green Gulch"
-    assert events[0]["source"] == "https://one"
+    evt = events[0]
+    assert evt.location.practice_center == "Green Gulch"
+    assert evt.other.get("source") == "https://one"
 
 
 def test_events_to_xml():
     events = [
-        {
-            "title": "3-Day Retreat",
-            "date": "June 1",
-            "practice_center": "Green Gulch",
-            "link": "https://example.com/retreat",
-            "source": "https://dummy?page=0",
-        }
+        RetreatEvent(
+            title="3-Day Retreat",
+            dates=RetreatDates(start=datetime(2025, 6, 1), end=datetime(2025, 6, 1)),
+            teachers=[],
+            location=RetreatLocation(practice_center="Green Gulch"),
+            description="",
+            link="https://example.com/retreat",
+            other={"source": "https://dummy?page=0"},
+        )
     ]
     xml = events_to_xml(events)
     assert "<retreats>" in xml
@@ -103,13 +109,15 @@ def test_events_to_xml():
 def test_main_writes_output(tmp_path, monkeypatch):
     def mock_fetch(url, pages=3, parser=None):
         return [
-            {
-                "title": "3-Day Retreat",
-                "date": "June 1",
-                "practice_center": "Green Gulch",
-                "link": "https://example.com/retreat",
-                "source": url,
-            }
+            RetreatEvent(
+                title="3-Day Retreat",
+                dates=RetreatDates(start=datetime(2025, 6, 1), end=datetime(2025, 6, 1)),
+                teachers=[],
+                location=RetreatLocation(practice_center="Green Gulch"),
+                description="",
+                link="https://example.com/retreat",
+                other={"source": url},
+            )
         ]
 
     monkeypatch.setattr("parse_sesshin_events.fetch_retreat_events", mock_fetch)
@@ -120,4 +128,3 @@ def test_main_writes_output(tmp_path, monkeypatch):
 
     contents = output.read_text(encoding="utf-8")
     assert "<retreats>" in contents
-
