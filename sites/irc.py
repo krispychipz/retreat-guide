@@ -1,4 +1,4 @@
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, NavigableString
 from datetime import datetime
 from typing import Dict, List
 import logging
@@ -30,9 +30,12 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
 
         # Teachers appear as links immediately following the title
         teachers: List[str] = []
+        br_after_teachers = None
         span = detail_p.find('span')
         if span:
             teachers = [a.get_text(strip=True) for a in span.find_all('a', href=True)]
+            br_after_teachers = span.find_next('br')
+        '''
         else:
             br = detail_p.find('br')
             for child in detail_p.children:
@@ -40,23 +43,21 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
                     break
                 if getattr(child, 'name', None) == 'a' and child.has_attr('href'):
                     teachers.append(child.get_text(strip=True))
+        '''
         logger.debug("Teachers parsed: %s", teachers)
 
         # Raw date text is right after the first <br>
+        dates = ''
         dates_text = ''
-        br = detail_p.find('br')
+        br = br_after_teachers
         if br:
-            node = br.next_sibling
-            while node and isinstance(node, str) and not node.strip():
-                node = node.next_sibling
-            if node:
-                if isinstance(node, str):
-                    text = node
-                else:
-                    text = node.get_text(' ', strip=True)
-                dates_text = re.split(r'\s+-\s+', text)[0].strip()
+            for el in br.next_elements:
+                #logger.debug("next element: %s", el)
+                if isinstance(el, NavigableString) and el.strip():
+                    dates_text = el.strip()
+                    break
         logger.debug("Dates text: %s", dates_text)
-
+        
         # Parse date range, e.g. "June 1 to 8, 2025" or "October 31 – November 15, 2025"
         m = re.search(
             r'([A-Za-z]+)\s+(\d{1,2})(?:,?\s*(\d{4}))?\s*(?:to|[-\u2013])\s*(?:([A-Za-z]+)\s+)?(\d{1,2}),?\s*(\d{4})?',
