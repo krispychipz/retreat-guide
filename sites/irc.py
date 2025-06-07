@@ -28,27 +28,19 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
         title = ' '.join(title_parts)
         logger.debug("Parsed title: %s", title)
 
-        # Teachers
-        teachers = [a.get_text(strip=True)
-                    for a in detail_p.find_all('a', href=True)]
-        logger.debug("Teachers from links: %s", teachers)
-        # Some teacher names may appear as plain text after the title
-        first_strong = detail_p.find('strong')
-        if first_strong:
-            node = first_strong.next_sibling
-            teacher_txt = ""
-            while node and getattr(node, 'name', None) != 'br':
-                if isinstance(node, str):
-                    teacher_txt += node
-                else:
-                    teacher_txt += node.get_text(" ", strip=True)
-                node = node.next_sibling
-            teacher_txt = teacher_txt.strip(" ,\u2013-")
-            if teacher_txt:
-                teachers.extend(
-                    [t.strip() for t in re.split(r",| and |/", teacher_txt) if t.strip()]
-                )
-        logger.debug("All teachers: %s", teachers)
+        # Teachers appear as links immediately following the title
+        teachers: List[str] = []
+        span = detail_p.find('span')
+        if span:
+            teachers = [a.get_text(strip=True) for a in span.find_all('a', href=True)]
+        else:
+            br = detail_p.find('br')
+            for child in detail_p.children:
+                if child == br:
+                    break
+                if getattr(child, 'name', None) == 'a' and child.has_attr('href'):
+                    teachers.append(child.get_text(strip=True))
+        logger.debug("Teachers parsed: %s", teachers)
 
         # Raw date text is right after the first <br>
         dates_text = ''
@@ -65,17 +57,18 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
                 dates_text = re.split(r'\s+-\s+', text)[0].strip()
         logger.debug("Dates text: %s", dates_text)
 
-        # Parse date range, e.g. "June 29 to July 13, 2025" or "June 29 – July 13, 2025"
+        # Parse date range, e.g. "June 1 to 8, 2025" or "October 31 – November 15, 2025"
         m = re.search(
-            r'([A-Za-z]+ \d{1,2})(?:,? (\d{4}))?\s*(?:to|[-\u2013])\s*([A-Za-z]+ \d{1,2})(?:,? (\d{4}))?',
+            r'([A-Za-z]+)\s+(\d{1,2})(?:,?\s*(\d{4}))?\s*(?:to|[-\u2013])\s*(?:([A-Za-z]+)\s+)?(\d{1,2}),?\s*(\d{4})?',
             dates_text,
         )
         if m:
-            start_str, start_year, end_str, end_year = m.groups()
-            end_year = end_year or start_year
-            start_year = start_year or end_year
-            start_dt = datetime.strptime(f"{start_str}, {start_year}", "%B %d, %Y")
-            end_dt = datetime.strptime(f"{end_str}, {end_year}", "%B %d, %Y")
+            smonth, sday, syear, emonth, eday, eyear = m.groups()
+            eyear = eyear or syear
+            syear = syear or eyear
+            emonth = emonth or smonth
+            start_dt = datetime.strptime(f"{smonth} {sday} {syear}", "%B %d %Y")
+            end_dt = datetime.strptime(f"{emonth} {eday} {eyear}", "%B %d %Y")
             dates = RetreatDates(start=start_dt, end=end_dt)
         else:
             # fallback to None if parse fails
