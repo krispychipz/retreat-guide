@@ -2,6 +2,8 @@ from datetime import datetime
 from typing import Dict, List
 
 from bs4 import BeautifulSoup
+import requests
+import re
 
 from models import RetreatEvent, RetreatDates, RetreatLocation
 
@@ -35,51 +37,67 @@ def fetch_events_page(page: int) -> str:
     return resp.text
 
 
-def _parse_single_date(text: str) -> datetime:
-    """Parse a date string like 'June 1' into a datetime."""
-    text = text.strip()
-    for fmt in ("%B %d, %Y", "%B %d"):
-        try:
-            dt = datetime.strptime(text, fmt)
-            if "%Y" not in fmt:
-                dt = dt.replace(year=datetime.now().year)
-            return dt
-        except ValueError:
-            continue
-    # Fallback to current time if parsing fails
-    return datetime.now()
-
-
 def parse_events(html: str, source: str) -> List[RetreatEvent]:
     """Parse retreat events from SFZC HTML snippet and return dataclasses."""
     soup = BeautifulSoup(html, "html.parser")
     events: List[RetreatEvent] = []
-    for row in soup.select("tr"):
-        title_cell = row.select_one("td.views-field.views-field-title")
-        if not title_cell:
+
+    for table in soup.select("table.views-table"):
+        cap = table.find("caption")
+        if not cap:
             continue
-        title_text = title_cell.get_text(strip=True)
-        if "retreat" not in title_text.lower():
+        date_str = cap.get_text(strip=True)
+        try:
+            event_day = datetime.strptime(date_str, "%A, %b %d, %Y").date()
+        except ValueError:
             continue
 
-        date_cell = row.select_one("td.views-field.views-field-field-dates-1")
-        center_cell = row.select_one("td.views-field.views-field-field-practice-center")
-        link_elem = title_cell.find("a", href=True)
+        for row in table.select("tbody tr"):
+            cols = row.find_all("td")
+            if len(cols) < 3:
+                continue
 
-        date_text = date_cell.get_text(strip=True) if date_cell else ""
-        start = _parse_single_date(date_text)
+            time_str = cols[0].get_text(strip=True)
+            try:
+                t = datetime.strptime(time_str, "%I:%M %p").time()
+            except ValueError:
+                t = None
+            start_dt = datetime.combine(event_day, t) if t else None
+            dates = RetreatDates(start=start_dt)
 
-        events.append(
-            RetreatEvent(
-                title=title_text,
-                dates=RetreatDates(start=start, end=start),
-                teachers=[],
-                location=RetreatLocation(
-                    practice_center=center_cell.get_text(strip=True) if center_cell else ""
-                ),
-                description="",
-                link=link_elem["href"] if link_elem else "",
-                other={"source": source},
+            loc_name = cols[1].get_text(strip=True)
+            location = RetreatLocation(practice_center=loc_name)
+
+            link_tag = cols[2].find("a")
+            title_raw = link_tag.get_text(strip=True) if link_tag else cols[2].get_text(strip=True)
+            title = re.sub(r",\s*\d{1,2}/\d{1,2}$", "", title_raw)
+            link = link_tag["href"] if link_tag and link_tag.has_attr("href") else ""
+
+            if "retreat" not in title.lower():
+                continue
+
+            events.append(
+                RetreatEvent(
+                    title=title,
+                    dates=dates,
+                    teachers=[],
+                    location=location,
+                    description="",
+                    link=link,
+                    other={"source": source},
+                )
             )
-        )
+
     return events
+
+
+def parse_calendar(html_path: str) -> List[RetreatEvent]:
+    """Convenience wrapper for local files."""
+    with open(html_path, encoding="utf-8") as fh:
+        return parse_events(fh.read(), html_path)
+
+
+if __name__ == "__main__":
+    retreats = parse_calendar("sfzc.html")
+    for r in retreats:
+        print(r)
