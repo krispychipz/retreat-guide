@@ -21,11 +21,11 @@ pip install -r requirements.txt
 
 Run the script (it will fetch several pages from the site's AJAX endpoint). By default
 it prints results to the console.  Pass `--output` to write the collected events
-to an XML file instead of printing them:
+to a JSON file instead of printing them:
 
 ```bash
 python parse_retreat_events.py
-python parse_retreat_events.py --output events.xml
+python parse_retreat_events.py --output events.json
 ```
 
 The script downloads three pages of events by default. Add `--pages` to change
