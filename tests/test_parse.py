@@ -128,3 +128,42 @@ def test_main_writes_output(tmp_path, monkeypatch):
 
     contents = output.read_text(encoding="utf-8")
     assert "<retreats>" in contents
+
+
+def test_events_to_xml_handles_missing_dates():
+    events = [
+        RetreatEvent(
+            title="TBD",
+            dates=RetreatDates(),
+            teachers=[],
+            location=RetreatLocation(),
+            description="",
+            link="",
+            other={},
+        )
+    ]
+    xml = events_to_xml(events)
+    assert "<start />" in xml
+    assert "<end />" in xml
+
+
+def test_main_prints_without_dates(monkeypatch, capsys):
+    def mock_fetch(url, pages=3, parser=None):
+        return [
+            RetreatEvent(
+                title="Retreat",
+                dates=RetreatDates(),
+                teachers=[],
+                location=RetreatLocation(practice_center="Center"),
+                description="",
+                link="http://example.com",
+                other={"source": url},
+            )
+        ]
+
+    monkeypatch.setattr("parse_retreat_events.fetch_retreat_events", mock_fetch)
+
+    monkeypatch.setattr(sys, "argv", ["prog", "--site", "sfzc"])
+    parse_main()
+    captured = capsys.readouterr()
+    assert "Unknown Date" in captured.out

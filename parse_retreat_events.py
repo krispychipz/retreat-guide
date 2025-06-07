@@ -81,9 +81,11 @@ def events_to_xml(events: List[RetreatEvent]) -> str:
         dates = data.pop("dates")
         date_elem = ET.SubElement(retreat_elem, "dates")
         start_elem = ET.SubElement(date_elem, "start")
-        start_elem.text = dates["start"].isoformat()
+        start_dt = dates.get("start")
+        start_elem.text = start_dt.isoformat() if start_dt else ""
         end_elem = ET.SubElement(date_elem, "end")
-        end_elem.text = dates["end"].isoformat()
+        end_dt = dates.get("end")
+        end_elem.text = end_dt.isoformat() if end_dt else ""
 
         # Location
         location = data.pop("location")
@@ -158,9 +160,11 @@ def main() -> None:
         print(f"Wrote {len(events)} events to {args.output}")
     else:
         for event in events:
-            print(f"{event.dates.start:%B %d, %Y} - {event.title}")
-            print(event.location.practice_center)
-            print(event.link)
+            start_dt = event.dates.start
+            date_str = start_dt.strftime("%B %d, %Y") if start_dt else "Unknown Date"
+            print(f"{date_str} - {event.title}")
+            print(event.location.practice_center or "")
+            print(event.link or "")
             print(f"Source: {event.other.get('source', '')}")
             print()
 
