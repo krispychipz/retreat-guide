@@ -24,15 +24,16 @@ it prints results to the console.  Pass `--output` to write the collected events
 to an XML file instead of printing them:
 
 ```bash
-python parse_sesshin_events.py
-python parse_sesshin_events.py --output events.xml
+python parse_retreat_events.py
+python parse_retreat_events.py --output events.xml
 ```
 
 The script downloads three pages of events by default. Add `--pages` to change
-the number of pages or `--debug` to see detailed parsing information:
+the number of pages or `--debug` to see detailed parsing information. Use
+`--site` to choose between `sfzc`, `irc`, or `spiritrock`:
 
 ```bash
-python parse_sesshin_events.py --pages 5 --debug
+python parse_retreat_events.py --pages 5 --debug
 ```
 
 The script will print the date, practice center, link, and source URL for events

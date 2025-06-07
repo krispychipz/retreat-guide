@@ -6,7 +6,10 @@ import requests
 import xml.etree.ElementTree as ET
 
 from models import RetreatEvent
-from sites import sfzc
+from sites import sfzc, irc, spiritrock
+
+IRC_URL = "https://www.insightretreatcenter.org/retreats/"
+SPIRITROCK_URL = "https://www.spiritrock.org/calendar?programType=retreats"
 
 logger = logging.getLogger(__name__)
 
@@ -32,7 +35,16 @@ def fetch_retreat_events(
             payload = None
 
         if isinstance(payload, list):
-            html = "".join(part.get("data", "") for part in payload if isinstance(part, dict))
+            html_parts: List[str] = []
+            for part in payload:
+                if not isinstance(part, dict):
+                    continue
+                data = part.get("data", "")
+                if isinstance(data, list):
+                    html_parts.extend(str(item) for item in data if isinstance(item, (str, bytes)))
+                else:
+                    html_parts.append(str(data))
+            html = "".join(html_parts)
 
         events = parser(html, url)
         all_events.extend(events)
@@ -106,16 +118,22 @@ def events_to_xml(events: List[RetreatEvent]) -> str:
 def main() -> None:
     import argparse
 
-    parser = argparse.ArgumentParser(description="Parse retreat events from SFZC")
+    parser = argparse.ArgumentParser(description="Parse retreat events from supported sites")
     parser.add_argument("--debug", action="store_true", help="Enable debug logging")
-    parser.add_argument("--pages", type=int, default=3, help="Number of pages to fetch")
+    parser.add_argument("--pages", type=int, default=3, help="Number of pages to fetch (where applicable)")
+    parser.add_argument("--site", choices=["sfzc", "irc", "spiritrock"], default="sfzc", help="Which site to parse")
     parser.add_argument("--output", type=str, help="Write events to this XML file")
     args = parser.parse_args()
 
     log_level = logging.DEBUG if args.debug else logging.INFO
     logging.basicConfig(level=log_level, format="%(levelname)s:%(message)s")
 
-    events = fetch_retreat_events(sfzc.BASE_URL, pages=args.pages)
+    if args.site == "sfzc":
+        events = fetch_retreat_events(sfzc.BASE_URL, pages=args.pages, parser=sfzc.parse_events)
+    elif args.site == "irc":
+        events = fetch_retreat_events(IRC_URL, pages=1, parser=irc.parse_events)
+    else:  # spiritrock
+        events = fetch_retreat_events(SPIRITROCK_URL, pages=1, parser=spiritrock.parse_events)
 
     if args.output:
         xml = events_to_xml(events)
