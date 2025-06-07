@@ -1,16 +1,21 @@
 from bs4 import BeautifulSoup
 from datetime import datetime
 from typing import Dict, List
+import logging
 import re
 
 from models import RetreatEvent, RetreatDates, RetreatLocation
 
+logger = logging.getLogger(__name__)
+
 def parse_events(html: str, source: str) -> List[RetreatEvent]:
     """Parse retreats from an IRC HTML page."""
+    logger.debug("Starting IRC parsing")
     soup = BeautifulSoup(html, 'html.parser')
     events: List[RetreatEvent] = []
 
     for container in soup.find_all('div', class_='irc-retreat-listing-div-text'):
+        logger.debug("New retreat container: %s", container.get_text(strip=True)[:60])
         paras = container.find_all('p', class_='irc-retreat-listing-p')
         if len(paras) < 2:
             continue
@@ -21,10 +26,12 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
                        for s in detail_p.find_all('strong')
                        if 'RETREAT FULL' not in s.get_text()]
         title = ' '.join(title_parts)
+        logger.debug("Parsed title: %s", title)
 
         # Teachers
         teachers = [a.get_text(strip=True)
                     for a in detail_p.find_all('a', href=True)]
+        logger.debug("Teachers from links: %s", teachers)
         # Some teacher names may appear as plain text after the title
         first_strong = detail_p.find('strong')
         if first_strong:
@@ -41,6 +48,7 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
                 teachers.extend(
                     [t.strip() for t in re.split(r",| and |/", teacher_txt) if t.strip()]
                 )
+        logger.debug("All teachers: %s", teachers)
 
         # Raw date text is right after the first <br>
         dates_text = ''
@@ -55,6 +63,7 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
                 else:
                     text = node.get_text(' ', strip=True)
                 dates_text = re.split(r'\s+-\s+', text)[0].strip()
+        logger.debug("Dates text: %s", dates_text)
 
         # Parse date range, e.g. "June 29 to July 13, 2025" or "June 29 – July 13, 2025"
         m = re.search(
@@ -71,9 +80,11 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
         else:
             # fallback to None if parse fails
             dates = RetreatDates(start=None, end=None)  # type: ignore
+        logger.debug("Parsed dates: %s", dates)
 
         # Description
         description = desc_p.get_text(strip=True)
+        logger.debug("Description: %s", description[:60])
 
         # Registration link: look for a REGISTER link in the list items
         link = ''
@@ -82,6 +93,7 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
             reg = ul.find('a', string=re.compile(r'REGISTER', re.I))
             if reg and reg.has_attr('href'):
                 link = reg['href']
+        logger.debug("Registration link: %s", link)
 
         # Other info dictionary
         other: Dict[str, str] = {}
@@ -94,6 +106,7 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
                 val = li.get_text(' ', strip=True)
                 val = re.sub(r'^' + re.escape(key) + r':\s*', '', val)
                 other[key] = val
+        logger.debug("Other fields: %s", other)
 
         # Location fields (if present in other, under key "Location")
         loc = RetreatLocation()
@@ -107,6 +120,7 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
                 loc.region = parts[2]
             if len(parts) > 3:
                 loc.country = parts[3]
+        logger.debug("Location: %s", loc)
 
         events.append(RetreatEvent(
             title=title,
@@ -117,7 +131,9 @@ def parse_events(html: str, source: str) -> List[RetreatEvent]:
             link=link,
             other={"source": source, **other}
         ))
+        logger.debug("Added event: %s", title)
 
+    logger.debug("Total events parsed: %d", len(events))
     return events
 
 
