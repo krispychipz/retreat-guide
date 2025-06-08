@@ -1,3 +1,4 @@
+import logging
 from bs4 import BeautifulSoup
 from datetime import datetime
 from typing import Dict, List, Optional
@@ -25,6 +26,7 @@ def fetch_algolia_page(page: int = 0, hits_per_page: int = 100) -> List[dict]:
     return resp.json().get("hits", [])
 
 def parse_algolia_events(max_pages: int=10) -> List[RetreatEvent]:
+    logging.info("Fetching Spirit Rock events from Algolia")
     events: List[RetreatEvent] = []
     for page in range(max_pages):
         hits = fetch_algolia_page(page)
@@ -37,7 +39,7 @@ def parse_algolia_events(max_pages: int=10) -> List[RetreatEvent]:
             link  = h.get("url", "")
 
             # 2) Description (strip HTML)
-            description = strip_html(h.get("shortDescription"))
+            description = h.get("shortDescription") or h.get("description", "")
 
             # 3) Dates (UNIX timestamps → datetime)
             start_ts = h.get("startDate")
@@ -53,6 +55,10 @@ def parse_algolia_events(max_pages: int=10) -> List[RetreatEvent]:
             # 5) Location (Spirit Rock only gives a displayLocation here)
             loc_str = h.get("displayLocation")
             location = RetreatLocation(practice_center=loc_str)
+            location.practice_center = "Spirit Rock Meditation Center"
+            location.city = "Woodacre"
+            location.region = "CA"
+            location.country = "USA"
 
             # 6) Other metadata
             other = {
@@ -62,6 +68,7 @@ def parse_algolia_events(max_pages: int=10) -> List[RetreatEvent]:
                 "credits":        str(h.get("creditCount", "")),
                 "postDateString": h.get("postDateString", "")
             }
+            other["address"] = "5000 Sir Francis Drake Blvd Box 169, Woodacre, CA 94973"
 
             events.append(RetreatEvent(
                 title=title,
@@ -72,6 +79,7 @@ def parse_algolia_events(max_pages: int=10) -> List[RetreatEvent]:
                 link=link,
                 other=other
             ))
+    logging.info("%d retreat events found", len(events))
 
     return events
 
