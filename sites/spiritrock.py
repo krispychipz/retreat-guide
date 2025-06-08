@@ -1,9 +1,88 @@
 from bs4 import BeautifulSoup
 from datetime import datetime
-from typing import Dict, List
+from typing import Dict, List, Optional
+import requests
 import re
 
 from models import RetreatEvent, RetreatDates, RetreatLocation
+
+ALGOLIA_URL = "https://e6yg7cmgyo-dsn.algolia.net/1/indexes/events/query"
+HEADERS = {
+    "X-Algolia-API-Key": "04e497e32c17a3fc1bd4e4b8b2e45413",
+    "X-Algolia-Application-Id": "E6YG7CMGYO",
+    "X-Algolia-Agent": "Algolia for JavaScript (4.24.0); Browser (lite)",
+}
+
+
+def fetch_algolia_page(page: int = 0, hits_per_page: int = 100) -> List[dict]:
+    """Return a single page of results from the Spirit Rock Algolia index."""
+    payload = {"params": f"page={page}&hitsPerPage={hits_per_page}"}
+    resp = requests.post(ALGOLIA_URL, json=payload, headers=HEADERS)
+    resp.raise_for_status()
+    return resp.json().get("hits", [])
+
+
+def parse_algolia_events(max_pages: int = 10) -> List[RetreatEvent]:
+    """Fetch and parse retreat events from Spirit Rock's Algolia feed."""
+    events: List[RetreatEvent] = []
+    for page in range(max_pages):
+        hits = fetch_algolia_page(page)
+        if not hits:
+            break
+
+        for h in hits:
+            title = h.get("title", "")
+            link = h.get("url", "")
+            start_str = h.get("startDate")
+            end_str = h.get("endDate")
+            teachers = h.get("teacherNames", [])
+            description = h.get("shortDescription") or h.get("description", "")
+
+            def parse_dt(s: Optional[str]):
+                try:
+                    return datetime.fromisoformat(s.replace("Z", "+00:00")) if s else None
+                except Exception:
+                    return None
+
+            dates = RetreatDates(start=parse_dt(start_str), end=parse_dt(end_str))
+
+            loc_data = h.get("location", {}) or {}
+            location = RetreatLocation(
+                practice_center=loc_data.get("centerName"),
+                city=loc_data.get("city"),
+                region=loc_data.get("region"),
+                country=loc_data.get("country"),
+            )
+
+            other = {
+                k: str(v)
+                for k, v in h.items()
+                if k
+                not in {
+                    "title",
+                    "url",
+                    "startDate",
+                    "endDate",
+                    "teacherNames",
+                    "description",
+                    "shortDescription",
+                    "location",
+                }
+            }
+
+            events.append(
+                RetreatEvent(
+                    title=title,
+                    dates=dates,
+                    teachers=teachers,
+                    location=location,
+                    description=description,
+                    link=link,
+                    other=other,
+                )
+            )
+
+    return events
 
 def parse_events(html: str, source: str) -> List[RetreatEvent]:
     """Parse Spirit Rock retreat listings."""

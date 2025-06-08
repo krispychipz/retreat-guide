@@ -107,6 +107,10 @@ def test_main_writes_output(tmp_path, monkeypatch):
         ]
 
     monkeypatch.setattr("parse_retreat_events.fetch_retreat_events", mock_fetch)
+    monkeypatch.setattr(
+        "parse_retreat_events.spiritrock.parse_algolia_events",
+        lambda: mock_fetch("https://spiritrock"),
+    )
 
     output = tmp_path / "events.json"
     monkeypatch.setattr(sys, "argv", ["prog", "--output", str(output)])

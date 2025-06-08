@@ -110,7 +110,7 @@ def fetch_all_sites(pages: int = 3) -> List[RetreatEvent]:
         )
     )
     events.extend(fetch_retreat_events(IRC_URL, pages=1, parser=irc.parse_events))
-    events.extend(fetch_retreat_events(SPIRITROCK_URL, pages=1, parser=spiritrock.parse_events))
+    events.extend(spiritrock.parse_algolia_events())
     return events
 
 
@@ -141,7 +141,7 @@ def main() -> None:
     elif args.site == "irc":
         events = fetch_retreat_events(IRC_URL, pages=1, parser=irc.parse_events)
     elif args.site == "spiritrock":
-        events = fetch_retreat_events(SPIRITROCK_URL, pages=1, parser=spiritrock.parse_events)
+        events = spiritrock.parse_algolia_events()
     else:  # all
         events = fetch_all_sites(pages=args.pages)
 
