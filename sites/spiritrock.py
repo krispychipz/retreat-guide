@@ -42,8 +42,32 @@ def fetch_description(url: str) -> str:
         resp.raise_for_status()
     except Exception:
         return ""
-
+    logging.debug("Fetching description from %s", url)
     soup = BeautifulSoup(resp.text, "html.parser")
+
+    # Look for a header element mentioning "description" and collect the text
+    # from the elements that follow until the next header. This mirrors the
+    # layout used on Spirit Rock pages where the description lives below a
+    # heading such as "Program Description".
+    header = soup.find(
+        lambda tag: (
+            tag.name in {"h1", "h2", "h3", "h4", "h5", "strong"}
+            and "description" in tag.get_text(strip=True).lower()
+        )
+    )
+    logging.debug("Found header for description: %s", header)
+    if header:
+        parts: List[str] = []
+        for sib in header.find_all_next():
+            if sib.name in {"h1", "h2", "h3", "h4", "h5"}:
+                break
+            if sib.name in {"p", "div"}:
+                text = sib.get_text(" ", strip=True)
+                if text:
+                    parts.append(text)
+        if parts:
+            logging.debug("Collected description parts: %s", parts)
+            return " ".join(parts)
 
     meta_og = soup.find("meta", property="og:description")
     meta_desc = soup.find("meta", attrs={"name": "description"})
@@ -72,7 +96,8 @@ def parse_algolia_events(max_pages: int=10) -> List[RetreatEvent]:
             link  = h.get("url", "")
 
             # 2) Description (strip HTML)
-            description = h.get("shortDescription") or h.get("description", "")
+            description = fetch_description(link)
+            #description = h.get("shortDescription") or h.get("description", "")
 
             # 3) Dates (UNIX timestamps → datetime)
             start_ts = h.get("startDate")
@@ -111,18 +136,11 @@ def parse_algolia_events(max_pages: int=10) -> List[RetreatEvent]:
                 teachers = [name.strip() for name in str(et).split(",") if name.strip()]
 
             # 5) Location information
-            loc_data = h.get("location")
-            if isinstance(loc_data, dict):
-                location = RetreatLocation(
-                    practice_center=loc_data.get("centerName"),
-                    city=loc_data.get("city"),
-                    region=loc_data.get("region"),
-                    country=loc_data.get("country"),
-                )
-            else:
-                loc_str = h.get("displayLocation")
-                location = RetreatLocation(practice_center=loc_str)
-
+            location = RetreatLocation()
+            location.practice_center = "Spirit Rock Meditation Center"
+            location.city = "Woodacre"
+            location.region = "CA"
+            location.country = "USA"
 
             # 6) Other metadata
             other = {
@@ -162,83 +180,3 @@ def parse_algolia_events(max_pages: int=10) -> List[RetreatEvent]:
     logging.info("%d retreat events found", len(events))
 
     return events
-
-def parse_events(html: str, source: str) -> List[RetreatEvent]:
-    """Parse Spirit Rock retreat listings."""
-    soup = BeautifulSoup(html, 'html.parser')
-    events: List[RetreatEvent] = []
-
-    for card in soup.select('div.event-wrap'):
-        # 1) Title & link
-        a = card.select_one('h2.event-title a')
-        if not a:
-            continue
-        title = a.get_text(strip=True)
-        link = a['href']
-
-        # 2) Meta block contains date range and teacher links
-        meta_txt = card.select_one('.event-meta-full')
-        raw_meta = meta_txt.get_text(' ', strip=True) if meta_txt else ''
-
-        # match "June 29 – July 13, 2025" or similar
-        m = re.search(r'([A-Za-z]+ \d{1,2},? \d{4}).*?[–-].*?([A-Za-z]+ \d{1,2},? \d{4})', raw_meta)
-        if m:
-            start_dt = datetime.strptime(m.group(1), "%B %d, %Y")
-            end_dt = datetime.strptime(m.group(2), "%B %d, %Y")
-            dates = RetreatDates(start=start_dt, end=end_dt)
-        else:
-            dates = RetreatDates(start=None, end=None)
-
-        # 3) Teachers: gather names from links in meta, skipping register links
-        teachers = []
-        for link_tag in meta_txt.select('a[href]') if meta_txt else []:
-            href = link_tag['href']
-            if 'retreat.guru/program' in href:
-                continue
-            teachers.append(link_tag.get_text(strip=True))
-
-        # 4) Description: fetch full text from detail page if possible
-        desc_div = card.select_one('.event-description, .event-summary')
-        description = desc_div.get_text(' ', strip=True) if desc_div else ''
-        full_desc = fetch_description(link)
-        if full_desc:
-            description = full_desc
-
-        # 5) Other info: status or credits from the card-meta if present
-        other: Dict[str, str] = {}
-        if meta_txt:
-            text = meta_txt.get_text(' ', strip=True)
-            if 'Full' in text:
-                other['Status'] = text
-
-        # 6) Location
-        location = RetreatLocation()
-        location.practice_center = "Spirit Rock Meditation Center"
-        location.city = "Woodacre"
-        location.region = "CA"
-        location.country = "USA"
-        other["address"] = "5000 Sir Francis Drake Blvd Box 169, Woodacre, CA 94973"
-
-        events.append(RetreatEvent(
-            title=title,
-            dates=dates,
-            teachers=teachers,
-            location=location,
-            description=description,
-            link=link,
-            other={"source": source, **other}
-        ))
-
-    return events
-
-
-def parse_spiritrock(html_path: str) -> List[RetreatEvent]:
-    """Convenience wrapper for local files."""
-    with open(html_path, encoding='utf-8') as fh:
-        return parse_events(fh.read(), html_path)
-
-
-if __name__ == '__main__':
-    retreats = parse_spiritrock('spiritrock.html')
-    for evt in retreats:
-        print(evt)
